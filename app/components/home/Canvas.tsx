@@ -1,7 +1,8 @@
 // 画布容器
 'use client';
 
-import { useEffect, useState, RefObject } from 'react';
+import { useEffect, useState, useRef, RefObject } from 'react';
+import { usePreferences } from '@/app/preferences';
 import { CanvasSize } from '@/lib/types';
 import { ZoomIn, ZoomOut, Hand } from 'lucide-react';
 
@@ -29,7 +30,8 @@ export default function Canvas({
   // 画布平移状态
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
-  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const panGesture = useRef<{ pointerId: number; startX: number; startY: number; offsetX: number; offsetY: number } | null>(null);
+  const { locale } = usePreferences();
 
   // 判断是否可以拖拽：仅锁定模式（移除空格键快捷键）
   const canPan = isPanMode;
@@ -124,30 +126,44 @@ export default function Canvas({
   // 原因：空格键会干扰输入框、文本编辑等场景
   // 用户可以使用顶部工具栏的「手型」按钮来切换拖拽模式
 
-  // 处理画布拖拽
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (canPan) {
-      setIsPanning(true);
-      setPanStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
-    }
+  // Pointer events support touch, pen and mouse without relying on mousemove on mobile.
+  // Capture the active pointer so panning continues when it leaves the canvas.
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!canPan || (e.pointerType === 'mouse' && e.button !== 0) || panGesture.current) return;
+    panGesture.current = {
+      pointerId: e.pointerId,
+      startX: e.clientX,
+      startY: e.clientY,
+      offsetX: panOffset.x,
+      offsetY: panOffset.y,
+    };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setIsPanning(true);
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (isPanning && canPan) {
-      setPanOffset({
-        x: e.clientX - panStart.x,
-        y: e.clientY - panStart.y,
-      });
-    }
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const gesture = panGesture.current;
+    if (!canPan || !gesture || gesture.pointerId !== e.pointerId) return;
+    setPanOffset({
+      x: gesture.offsetX + e.clientX - gesture.startX,
+      y: gesture.offsetY + e.clientY - gesture.startY,
+    });
   };
 
-  const handleMouseUp = () => {
+  const stopPointerPan = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (panGesture.current?.pointerId !== e.pointerId) return;
+    panGesture.current = null;
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
     setIsPanning(false);
   };
 
-  const handleMouseLeave = () => {
+  useEffect(() => {
+    if (canPan) return;
+    panGesture.current = null;
     setIsPanning(false);
-  };
+  }, [canPan]);
 
   // 处理容器点击,用于退出文本编辑模式
   const handleContainerClick = (e: React.MouseEvent) => {
@@ -186,12 +202,14 @@ export default function Canvas({
       style={{
         backgroundColor: '#F7F8FA',
         cursor: canPan ? (isPanning ? 'grabbing' : 'grab') : 'default',
+        touchAction: canPan ? 'none' : 'auto',
       }}
       onClick={handleContainerClick}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={stopPointerPan}
+      onPointerCancel={stopPointerPan}
+      onLostPointerCapture={stopPointerPan}
     >
       {/* 画布容器（带边框和阴影） */}
       <div
@@ -238,7 +256,7 @@ export default function Canvas({
           className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/75 text-white px-4 py-2 rounded-lg text-sm font-medium pointer-events-none"
           style={{ zIndex: 1000 }}
         >
-          按住空格键拖拽画布
+          {locale === 'ar' ? 'اسحب لتحريك اللوحة' : 'Drag to pan canvas'}
         </div>
       )}
       {isPanMode && (
@@ -247,7 +265,7 @@ export default function Canvas({
           style={{ zIndex: 1000 }}
         >
           <Hand className="h-4 w-4" />
-          拖拽模式已激活
+          {locale === 'ar' ? 'وضع تحريك اللوحة مفعّل' : 'Canvas pan mode active'}
         </div>
       )}
     </div>
