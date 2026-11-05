@@ -69,15 +69,22 @@ export default function Canvas({
     // 立即执行一次
     updateScale();
 
-    // 监听窗口大小变化
+    // A mobile properties drawer or sidebar can change the available canvas
+    // area without triggering a window resize. Observe the actual container.
+    const container = document.getElementById('canvas-container');
+    const observer = container && typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(updateScale)
+      : null;
+    if (container && observer) observer.observe(container);
     window.addEventListener('resize', updateScale);
 
-    // 使用 setTimeout 确保在画布尺寸改变后重新计算
-    const timer = setTimeout(updateScale, 100);
+    // Recheck once after the initial layout settles.
+    const timer = window.setTimeout(updateScale, 100);
 
     return () => {
+      observer?.disconnect();
       window.removeEventListener('resize', updateScale);
-      clearTimeout(timer);
+      window.clearTimeout(timer);
     };
   }, [canvasSize]);
 
