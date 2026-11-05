@@ -53,6 +53,7 @@ function normalizeCanvasSize(size?: CanvasSize | null): CanvasSize {
 }
 
 export default function Home() {
+  const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const managerRef = useRef<CanvasManager | null>(null);
   const versionRef = useRef<VersionManager | null>(null);
@@ -1933,7 +1934,8 @@ export default function Home() {
           onContextMenu={handleContextMenu}
         />
 
-        {/* 右侧属性面板 - 根据选中对象类型动态切换 */}
+        <button type="button" className="tapndo-panel-toggle" onClick={() => setMobilePanelOpen(!mobilePanelOpen)} aria-expanded={mobilePanelOpen} aria-controls="tapndo-properties">{mobilePanelOpen ? 'Close settings / إغلاق' : 'Settings / الإعدادات'}</button>
+        <div id="tapndo-properties" className={`tapndo-properties ${mobilePanelOpen ? 'is-open' : ''}`}>
         {(() => {
           // 判断对象类型
           const objectType = selectedObject?.type;
@@ -2061,6 +2063,7 @@ export default function Home() {
             />
           );
         })()}
+        </div>
       </div>
 
       {/* 右键菜单 */}

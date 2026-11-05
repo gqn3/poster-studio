@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Menu, Download, Copy, Plus, ZoomIn, ZoomOut, Pencil, Trash2, Check, X, Database, ChevronDown, Palette, Hand, MousePointer2, Settings, Heart, QrCode, Layout, Save, Share2, Loader2, Github, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { usePreferences } from '@/app/preferences';
 
 interface TopbarProps {
   versions: CanvasVersion[];
@@ -67,6 +68,7 @@ export default function Topbar({
   onOpenTemplateLibrary,
   onSaveAsTemplate,
 }: TopbarProps) {
+  const { locale, setLocale, dark, setDark } = usePreferences();
   const [sizeMenuOpen, setSizeMenuOpen] = useState(false);
   const [versionMenuOpen, setVersionMenuOpen] = useState(false);
   const [activeRatio, setActiveRatio] = useState<'3:4' | '1:1' | '4:3' | '16:9' | '21:9' | '9:16'>('3:4');
@@ -101,7 +103,7 @@ export default function Topbar({
 
   return (
     <header
-      className="flex items-center justify-between px-8 bg-background"
+      className="tapndo-topbar flex items-center justify-between px-8 bg-background"
       style={{ height: '64px', borderBottom: '1px solid hsl(var(--border))' }}
     >
       {/* 左侧：Logo + 版本选择 + 尺寸选择 */}
@@ -109,7 +111,7 @@ export default function Topbar({
         {/* Logo */}
         <div className="flex items-center gap-3">
           <Palette className="h-5 w-5 text-muted-foreground" />
-          <span className="font-semibold text-foreground text-base">乔木画布</span>
+          <span className="font-semibold text-foreground text-base">TapNDo Studio</span>
         </div>
 
         {/* 版本选择 */}
@@ -271,7 +273,7 @@ export default function Topbar({
             className="h-10 px-4 border-gray-200 gap-2"
           >
             <Layout className="h-4 w-4" />
-            模板
+            {locale === 'ar' ? 'القوالب' : 'Templates'}
           </Button>
         )}
 
@@ -283,11 +285,16 @@ export default function Topbar({
             className="h-10 px-4 border-gray-200 gap-2"
           >
             <Save className="h-4 w-4" />
-            另存为模板
+            {locale === 'ar' ? 'حفظ كقالب' : 'Save as template'}
           </Button>
         )}
       </div>
 
+      {/* Display preferences remain local to this browser. */}
+      <div className="flex items-center gap-2 px-2">
+        <button type="button" className="tapndo-pref" onClick={() => setLocale(locale === 'en' ? 'ar' : 'en')} aria-label="Switch language">{locale === 'en' ? 'العربية' : 'English'}</button>
+        <button type="button" className="tapndo-pref" onClick={() => setDark(!dark)} aria-label="Toggle dark mode">{dark ? '☀' : '☾'}</button>
+      </div>
       {/* 右侧：缩放控制 + 复制 + 下载 */}
       <div className="flex items-center gap-3">
         {/* 缩放控制 */}
@@ -334,12 +341,12 @@ export default function Topbar({
         {onCopy && (
           <Button className="h-10 px-6 py-2 gap-2 shadow-sm" onClick={onCopy}>
             <Copy className="h-4 w-4" />
-            复制
+            {locale === 'ar' ? 'نسخ' : 'Copy'}
           </Button>
         )}
         <Button className="h-10 px-6 py-2 gap-2 shadow-sm" onClick={onDownload}>
           <Download className="h-4 w-4" />
-          下载
+          {locale === 'ar' ? 'تنزيل' : 'Download'}
         </Button>
         <Button
           className="h-10 px-6 py-2 gap-2 shadow-sm"
@@ -354,7 +361,7 @@ export default function Topbar({
           ) : (
             <>
               <Share2 className="h-4 w-4" />
-              分享
+              {locale === 'ar' ? 'مشاركة' : 'Share'}
             </>
           )}
         </Button>

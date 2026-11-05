@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { PreferencesProvider } from "./preferences";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://ps.qiaomu.ai'),
-  title: "乔木画布 Poster Studio",
-  description: "在线制作小红书封面、知识卡片和社媒海报，支持高亮文字、版本管理、AI 生图和一键导出",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  title: "TapNDo Studio",
+  description: "Design posters and social graphics in your browser.",
   icons: {
     icon: [
       { url: '/icon.png', type: 'image/png', sizes: '512x512' },
@@ -15,10 +16,10 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "乔木画布 Poster Studio",
-    description: "在线制作小红书封面、知识卡片和社媒海报",
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://ps.qiaomu.ai',
-    siteName: "乔木画布",
+    title: "TapNDo Studio",
+    description: "Design posters and social graphics in your browser.",
+    url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    siteName: "TapNDo Studio",
     type: 'website',
   },
 };
@@ -36,14 +37,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         {umamiSrc && umamiWebsiteId ? (
           <script defer src={umamiSrc} data-website-id={umamiWebsiteId}></script>
         ) : null}
       </head>
       <body suppressHydrationWarning>
-        {children}
+        <PreferencesProvider>{children}</PreferencesProvider>
       </body>
     </html>
   );
