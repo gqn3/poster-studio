@@ -1,0 +1,84 @@
+name: Security and build gate
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit-production:
+    name: Production dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install exact locked dependencies
+        run: npm ci --ignore-scripts --no-audit
+      - name: Capture production advisory details
+        shell: bash
+        run: |
+          set +e
+          npm audit --omit=dev --json > production-audit.json
+          result=$?
+          set -e
+          echo "npm audit exit status: $result"
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const audit = JSON.parse(fs.readFileSync('production-audit.json', 'utf8'));
+          const counts = audit.metadata?.vulnerabilities;
+          if (!counts) {
+            console.error('Missing audit vulnerability metadata; fail closed.');
+            process.exit(1);
+          }
+          const lines = [
+            '## Production dependency audit',
+            '',
+            '| Severity | Count |',
+            '| --- | ---: |',
+            ...['critical', 'high', 'moderate', 'low'].map(s => `| ${s} | ${counts[s] ?? 0} |`),
+            '',
+            'Download the production-audit artifact to inspect package paths and available fixes.'
+          ];
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');
+          if ((counts.high || 0) + (counts.critical || 0) > 0) {
+            console.error('High/critical production advisories remain unresolved.');
+            process.exit(1);
+          }
+          NODE
+      - name: Upload production advisory report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-audit-${{ github.run_id }}
+          path: production-audit.json
+          retention-days: 7
+          if-no-files-found: warn
+
+  build:
+    name: Next.js production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install exact locked dependencies
+        run: npm ci --no-audit
+      - name: Compile production app
+        run: npm run build
