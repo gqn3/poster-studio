@@ -22,3 +22,33 @@ test('storage quota failure never deletes another project', () => {
   assert.equal(manager.getAll().length, 2);
   assert.equal(JSON.parse(saved).versions.length, 2);
 });
+
+test('rapid canvas creation and duplication never reuse IDs, including after reload', () => {
+  let saved = '';
+  global.window = {};
+  global.localStorage = {
+    getItem: () => saved || null,
+    setItem: (_key, value) => { saved = value; },
+  };
+  const originalNow = Date.now;
+  try {
+    Date.now = () => 1700000000000;
+    const manager = new loaded.exports.VersionManager();
+    const first = manager.getActive();
+    const second = manager.create('Second');
+    const copy = manager.duplicate(first.id, '{"objects":[]}', { width: 100, height: 100 });
+    const fourth = manager.create('Fourth');
+    const ids = manager.getAll().map((version) => version.id);
+    assert.equal(new Set(ids).size, 4);
+    assert.equal(copy.data, '{"objects":[]}');
+    assert.notEqual(first.id, second.id);
+    assert.notEqual(copy.id, fourth.id);
+    const reloaded = new loaded.exports.VersionManager();
+    assert.deepEqual(reloaded.getAll().map((version) => version.id), ids);
+    assert.equal(reloaded.getById(copy.id).data, '{"objects":[]}');
+  } finally {
+    Date.now = originalNow;
+    delete global.window;
+    delete global.localStorage;
+  }
+});
