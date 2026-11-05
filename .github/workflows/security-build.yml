@@ -26,8 +26,59 @@ jobs:
           cache: npm
       - name: Install exact locked dependencies
         run: npm ci --ignore-scripts --no-audit
-      - name: Reject high and critical production advisories
-        run: npm audit --omit=dev --audit-level=high
+      - name: Capture production advisory details
+        id: audit
+        shell: bash
+        run: |
+          set +e
+          npm audit --omit=dev --json > production-audit.json
+          result=$?
+          echo "exit_code=$result" >> "$GITHUB_OUTPUT"
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const audit = JSON.parse(fs.readFileSync('production-audit.json', 'utf8'));
+          const counts = audit.metadata?.vulnerabilities || {};
+          const lines = [
+            '## Production dependency audit',
+            '',
+            '| Severity | Count |',
+            '| --- | ---: |',
+            ...['critical', 'high', 'moderate', 'low'].map(s => `| ${s} | ${counts[s] ?? 0} |`),
+            '',
+            'See the downloadable production-audit artifact for package paths and fix availability.',
+            'The release gate remains failing when npm audit reports high/critical advisories.'
+          ];
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, lines.join('\n') + '\n');
+          NODE
+      - name: Upload production advisory report
+        if: always() && steps.audit.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-audit-${{ github.run_id }}
+          path: production-audit.json
+          retention-days: 7
+          if-no-files-found: error
+      - name: Reject unresolved high and critical production advisories
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const report = JSON.parse(fs.readFileSync('production-audit.json', 'utf8'));
+          const counts = report.metadata?.vulnerabilities;
+          if (!counts) {
+            console.error('Missing audit vulnerability metadata; fail closed.');
+            process.exit(1);
+          }
+          if ((counts.high || 0) + (counts.critical || 0) > 0) {
+            console.error('High/critical production advisories remain unresolved.');
+            process.exit(1);
+          }
+          NODE
+      - name: Verify audit command completed successfully
+        if: steps.audit.outputs.exit_code != '0'
+        run: |
+          echo "npm audit failed or reported vulnerabilities; inspect uploaded report"
+          exit 1
 
   build:
     name: Next.js production build
