@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readFile } from 'fs/promises';
-import { join } from 'path';
+import { readFile, realpath } from 'fs/promises';
+import { join, relative, isAbsolute } from 'path';
 
 /**
  * API 路由：提供 npm 包中的字体 CSS 文件
@@ -31,8 +31,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // User-controlled paths must stay inside the font package directory, including symlinks.
+    if (cssPath.includes('\\') || cssPath.split('/').some((part) => part === '..' || part === '.') || !cssPath.endsWith('.css')) {
+      return NextResponse.json({ error: 'Invalid font path' }, { status: 403 });
+    }
+    const root = await realpath(join(process.cwd(), 'node_modules', '@chinese-fonts'));
+    const target = await realpath(join(process.cwd(), 'node_modules', cssPath));
+    const inside = relative(root, target);
+    if (!inside || inside.startsWith('..') || isAbsolute(inside)) {
+      return NextResponse.json({ error: 'Invalid font path' }, { status: 403 });
+    }
     // 读取 CSS 文件
-    const filePath = join(process.cwd(), 'node_modules', cssPath);
+    const filePath = target;
     console.log('📂 读取文件:', filePath);
 
     let cssContent = await readFile(filePath, 'utf-8');
@@ -71,7 +81,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('❌ 字体 CSS 加载失败:', error);
     return NextResponse.json(
-      { error: 'Font CSS not found', details: error instanceof Error ? error.message : String(error) },
+      { error: 'Font CSS not found', details: 'Font file unavailable' },
       { status: 404 }
     );
   }

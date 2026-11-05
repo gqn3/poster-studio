@@ -374,7 +374,7 @@ export default function ImageDialog({
                 支持 JPG、PNG、GIF 等格式
               </p>
               <p className="text-sm text-muted-foreground mt-4">
-                💡 上传的图片会自动保存到图库
+                PNG, JPEG, WebP, GIF · 2 MB maximum · stored in this browser
               </p>
             </button>
           </TabsContent>

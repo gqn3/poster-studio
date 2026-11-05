@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePreferences } from '@/app/preferences';
 import { FONTS, FontConfig, LOCAL_OR_SYSTEM_FONTS } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -65,6 +66,7 @@ export default function FontPanel({
   onBorderChange,
   onCanvasBackgroundChange,
 }: FontPanelProps) {
+  const { locale } = usePreferences();
   const [loadingFonts, setLoadingFonts] = useState<Set<string>>(new Set());
   const [loadedFonts, setLoadedFonts] = useState<Set<string>>(
     new Set(LOCAL_OR_SYSTEM_FONTS)
@@ -416,16 +418,16 @@ export default function FontPanel({
       {/* 主 Tab 组：字体设置 / 对齐与间距 / 画布背景 */}
       <Tabs value={activeMainTab} onValueChange={(value) => setActiveMainTab(value as any)} className="space-y-0">
         <TabsList className="w-full grid grid-cols-3">
-          <TabsTrigger value="font">字体设置</TabsTrigger>
-          <TabsTrigger value="spacing">对齐与间距</TabsTrigger>
-          <TabsTrigger value="canvas">画布背景</TabsTrigger>
+          <TabsTrigger value="font">{locale === 'ar' ? 'الخط' : 'Typography'}</TabsTrigger>
+          <TabsTrigger value="spacing">{locale === 'ar' ? 'المحاذاة' : 'Alignment'}</TabsTrigger>
+          <TabsTrigger value="canvas">{locale === 'ar' ? 'الخلفية' : 'Background'}</TabsTrigger>
         </TabsList>
 
         {/* 字体设置 Tab */}
         <TabsContent value="font" className="px-8 py-6 space-y-6">
           {/* 字体网格 */}
           <div>
-            <h3 className="text-sm font-semibold mb-4">字体</h3>
+            <h3 className="text-sm font-semibold mb-4">{locale === 'ar' ? 'الخط' : 'Font'}</h3>
             <div className="grid grid-cols-3 gap-3">
               {displayFonts.map((font) => {
                 const isSelected = currentFont === font.family;
@@ -500,7 +502,7 @@ export default function FontPanel({
           <div className="flex items-start gap-4">
             {/* 字体颜色 - 小方块 */}
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-medium text-muted-foreground h-[18px] leading-[18px]">颜色</label>
+              <label className="text-xs font-medium text-muted-foreground h-[18px] leading-[18px]">{locale === 'ar' ? 'اللون' : 'Color'}</label>
               <ColorPicker
                 color={currentColor}
                 onChange={onColorChange}
@@ -511,7 +513,7 @@ export default function FontPanel({
 
             {/* 字号 */}
             <div className="flex-1 flex flex-col gap-2">
-              <label className="text-xs font-medium text-muted-foreground h-[18px] leading-[18px]">字号</label>
+              <label className="text-xs font-medium text-muted-foreground h-[18px] leading-[18px]">{locale === 'ar' ? 'الحجم' : 'Size'}</label>
               <div className="flex items-center gap-1.5">
                 <Button
                   variant="outline"
@@ -576,7 +578,7 @@ export default function FontPanel({
           {/* 🆕 描边设置 */}
           <div className="space-y-4 pt-4 border-t">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold">描边</label>
+              <label className="text-sm font-semibold">{locale === 'ar' ? 'المحيط' : 'Outline'}</label>
               <Button
                 variant={strokeEnabled ? "default" : "outline"}
                 size="sm"
@@ -596,7 +598,7 @@ export default function FontPanel({
               <div className="space-y-3">
                 {/* 描边颜色 */}
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-2 block">颜色</label>
+                  <label className="text-xs font-medium text-muted-foreground mb-2 block">{locale === 'ar' ? 'اللون' : 'Color'}</label>
                   <ColorPicker
                     color={strokeColor}
                     onChange={(color) => {
@@ -967,7 +969,7 @@ export default function FontPanel({
 
           {/* 图片背景上传 */}
           <div>
-            <label className="text-sm font-semibold mb-3 block">图片背景</label>
+            <label className="text-sm font-semibold mb-3 block">{locale === 'ar' ? 'صورة الخلفية' : 'Background image'}</label>
             <div className="flex gap-3">
               {/* 左侧预览 */}
               <div className="flex-1">
@@ -987,13 +989,13 @@ export default function FontPanel({
                         }}
                         className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-sm rounded-md transition-colors"
                       >
-                        删除
+                        {locale === 'ar' ? 'حذف' : 'Delete'}
                       </button>
                     </div>
                   </div>
                 ) : (
                   <div className="w-full h-32 rounded-md border-2 border-dashed border-border flex items-center justify-center">
-                    <span className="text-sm text-muted-foreground">暂无图片</span>
+                    <span className="text-sm text-muted-foreground">{locale === 'ar' ? 'لا توجد صورة' : 'No image'}</span>
                   </div>
                 )}
               </div>
@@ -1044,9 +1046,9 @@ export default function FontPanel({
           <Separator />
           <Tabs value={activeDecorationTab} onValueChange={(value) => setActiveDecorationTab(value as any)} className="space-y-0">
         <TabsList>
-          <TabsTrigger value="background">字体背景</TabsTrigger>
-          <TabsTrigger value="underline">下划线</TabsTrigger>
-          <TabsTrigger value="border">边框</TabsTrigger>
+          <TabsTrigger value="background">{locale === 'ar' ? 'خلفية النص' : 'Text background'}</TabsTrigger>
+          <TabsTrigger value="underline">{locale === 'ar' ? 'تسطير' : 'Underline'}</TabsTrigger>
+          <TabsTrigger value="border">{locale === 'ar' ? 'الحدود' : 'Border'}</TabsTrigger>
         </TabsList>
 
         {/* 背景 Tab 内容 */}
@@ -1055,7 +1057,7 @@ export default function FontPanel({
             <div className="flex items-start gap-4">
               {/* 背景颜色 - 小方块 */}
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-medium text-muted-foreground h-[18px] leading-[18px]">颜色</label>
+                <label className="text-xs font-medium text-muted-foreground h-[18px] leading-[18px]">{locale === 'ar' ? 'اللون' : 'Color'}</label>
                 <ColorPicker
                   color={backgroundColor}
                   onChange={(color) => {
@@ -1071,7 +1073,7 @@ export default function FontPanel({
 
               {/* 不透明度 */}
               <div className="flex-1 flex flex-col gap-2">
-                <label className="text-xs font-medium text-muted-foreground h-[18px] leading-[18px]">不透明度</label>
+                <label className="text-xs font-medium text-muted-foreground h-[18px] leading-[18px]">{locale === 'ar' ? 'الشفافية' : 'Opacity'}</label>
                 <div className="flex items-center gap-1.5">
                   <Button
                     variant="outline"
@@ -1116,7 +1118,7 @@ export default function FontPanel({
 
             {/* 推荐颜色 */}
             <div className="space-y-3">
-              <label className="text-xs text-muted-foreground">推荐颜色</label>
+              <label className="text-xs text-muted-foreground">{locale === 'ar' ? 'ألوان مقترحة' : 'Suggested colors'}</label>
               <div className="grid grid-cols-11 gap-2">
                 {/* 第一个：无背景 */}
                 <button
@@ -1161,7 +1163,7 @@ export default function FontPanel({
             {/* 最近使用 */}
             {recentBackgroundColors.length > 0 && (
               <div className="space-y-3">
-                <label className="text-xs text-muted-foreground">最近使用</label>
+                <label className="text-xs text-muted-foreground">{locale === 'ar' ? 'المستخدمة مؤخرًا' : 'Recent'}</label>
                 <div className="flex gap-1.5">
                   {recentBackgroundColors.slice(0, 2).map((color) => (
                     <button
@@ -1206,7 +1208,7 @@ export default function FontPanel({
             }}
             disabled={!selectedObject}
           >
-            无
+            {locale === 'ar' ? 'بلا' : 'None'}
           </Button>
           <Button
             variant="outline"
@@ -1222,7 +1224,7 @@ export default function FontPanel({
             }}
             disabled={!selectedObject}
           >
-            直线
+            {locale === 'ar' ? 'مستقيم' : 'Straight'}
           </Button>
           <Button
             variant="outline"
@@ -1238,7 +1240,7 @@ export default function FontPanel({
             }}
             disabled={!selectedObject}
           >
-            波浪
+            {locale === 'ar' ? 'متموج' : 'Wavy'}
           </Button>
           <Button
             variant="outline"
@@ -1254,7 +1256,7 @@ export default function FontPanel({
             }}
             disabled={!selectedObject}
           >
-            点线
+            {locale === 'ar' ? 'منقط' : 'Dotted'}
           </Button>
         </div>
 
@@ -1265,7 +1267,7 @@ export default function FontPanel({
             <div className="flex items-start gap-4">
               {/* 下划线颜色 - 小方块 */}
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-medium text-muted-foreground h-[18px] leading-[18px]">颜色</label>
+                <label className="text-xs font-medium text-muted-foreground h-[18px] leading-[18px]">{locale === 'ar' ? 'اللون' : 'Color'}</label>
                 <ColorPicker
                   color={underlineColor}
                   onChange={(color) => {
@@ -1279,7 +1281,7 @@ export default function FontPanel({
 
               {/* 粗细 */}
               <div className="flex-1 flex flex-col gap-2">
-                <label className="text-xs font-medium text-muted-foreground h-[18px] leading-[18px]">粗细</label>
+                <label className="text-xs font-medium text-muted-foreground h-[18px] leading-[18px]">{locale === 'ar' ? 'السُمك' : 'Width'}</label>
                 <div className="flex items-center gap-1.5">
                   <Button
                     variant="outline"
@@ -1318,7 +1320,7 @@ export default function FontPanel({
 
             {/* 推荐颜色 */}
             <div className="space-y-3">
-              <label className="text-xs text-muted-foreground">推荐颜色</label>
+              <label className="text-xs text-muted-foreground">{locale === 'ar' ? 'ألوان مقترحة' : 'Suggested colors'}</label>
               <div className="grid grid-cols-10 gap-2">
                 {PRESET_COLORS.map((color) => (
                   <button
@@ -1362,7 +1364,7 @@ export default function FontPanel({
             }}
             disabled={!selectedObject}
           >
-            无
+            {locale === 'ar' ? 'بلا' : 'None'}
           </Button>
           <Button
             variant="outline"
@@ -1378,7 +1380,7 @@ export default function FontPanel({
             }}
             disabled={!selectedObject}
           >
-            实线
+            {locale === 'ar' ? 'متصل' : 'Solid'}
           </Button>
           <Button
             variant="outline"
@@ -1394,7 +1396,7 @@ export default function FontPanel({
             }}
             disabled={!selectedObject}
           >
-            虚线
+            {locale === 'ar' ? 'متقطع' : 'Dashed'}
           </Button>
         </div>
 
@@ -1405,7 +1407,7 @@ export default function FontPanel({
             <div className="flex items-start gap-4">
               {/* 边框颜色 - 小方块 */}
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-medium text-muted-foreground h-[18px] leading-[18px]">颜色</label>
+                <label className="text-xs font-medium text-muted-foreground h-[18px] leading-[18px]">{locale === 'ar' ? 'اللون' : 'Color'}</label>
                 <ColorPicker
                   color={borderColor}
                   onChange={(color) => {
@@ -1419,7 +1421,7 @@ export default function FontPanel({
 
               {/* 粗细 */}
               <div className="flex-1 flex flex-col gap-2">
-                <label className="text-xs font-medium text-muted-foreground h-[18px] leading-[18px]">粗细</label>
+                <label className="text-xs font-medium text-muted-foreground h-[18px] leading-[18px]">{locale === 'ar' ? 'السُمك' : 'Width'}</label>
                 <div className="flex items-center gap-1.5">
                   <Button
                     variant="outline"
@@ -1458,7 +1460,7 @@ export default function FontPanel({
 
             {/* 推荐颜色 */}
             <div className="space-y-3">
-              <label className="text-xs text-muted-foreground">推荐颜色</label>
+              <label className="text-xs text-muted-foreground">{locale === 'ar' ? 'ألوان مقترحة' : 'Suggested colors'}</label>
               <div className="grid grid-cols-10 gap-2">
                 {PRESET_COLORS.map((color) => (
                   <button

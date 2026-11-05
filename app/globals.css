@@ -175,3 +175,24 @@ body {
   background-color: #000000 !important;
   border-radius: 9999px 9999px 0 0;
 }
+
+/* TapNDo: keep the canvas reachable while mobile properties are closed. */
+.tapndo-properties { display: flex; flex: 0 0 auto; min-height: 0; }
+.tapndo-panel-toggle { display: none; }
+@media (max-width: 767px) {
+ .tapndo-topbar { overflow-x: auto; flex-shrink: 0; gap: 1rem; padding-inline: 1rem; }
+ .tapndo-topbar > div { flex-shrink: 0; }
+ .tapndo-properties { display: none; position: absolute; z-index: 20; inset: 0 0 0 auto; width: min(360px, calc(100% - 56px)); box-shadow: 0 0 0 100vmax #10182866; }
+ .tapndo-properties.is-open { display: flex; }
+ .tapndo-properties > aside { width: 100% !important; }
+ .tapndo-panel-toggle { display: block; position: absolute; z-index: 21; right: 12px; bottom: 12px; border: 0; border-radius: 999px; padding: 10px 16px; background: #135e60; color: white; font-weight: 700; box-shadow: 0 4px 16px #0003; }
+ #canvas-container { min-width: 0; }
+}
+
+.tapndo-pref { border: 1px solid #b9d1cf; background: #f3faf9; border-radius: 9px; color: #145c59; padding: 8px 10px; white-space: nowrap; font-weight: 650; }
+.dark .tapndo-pref { background: #173c3a; color: #d4f5ee; border-color: #4d7773; }
+.dark #canvas-container { background-color: #1c2728 !important; }
+
+.dark [role="tab"] { color: #d4e5e3; }
+.dark [role="tab"][data-state="active"] { color: #ffffff; }
+.dark label, .dark .text-muted-foreground { color: #c3d5d3; }
