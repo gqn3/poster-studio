@@ -118,7 +118,7 @@ export default function Topbar({
         <DropdownMenu open={versionMenuOpen} onOpenChange={setVersionMenuOpen}>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="h-10 px-5 border-gray-200 gap-2">
-              {activeVersion?.name || '画布 1'}
+              {activeVersion?.name || (locale === 'ar' ? 'لوحة 1' : 'Canvas 1')}
               <ChevronDown className="h-4 w-4 text-gray-500" />
             </Button>
           </DropdownMenuTrigger>
@@ -178,7 +178,7 @@ export default function Topbar({
                             handleStartRename(version);
                           }}
                           className="p-1 hover:bg-white rounded"
-                          title="重命名"
+                          title={locale === 'ar' ? 'إعادة التسمية' : 'Rename'} aria-label={locale === 'ar' ? 'إعادة تسمية اللوحة' : 'Rename canvas'}
                         >
                           <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                         </button>
@@ -186,12 +186,12 @@ export default function Topbar({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (confirm(`确定删除画布"${version.name}"吗？`)) {
+                              if (confirm(locale === "ar" ? `هل تريد حذف اللوحة "${version.name}"؟` : `Delete canvas "${version.name}"?`) {
                                 onDeleteVersion(version.id);
                               }
                             }}
                             className="p-1 hover:bg-white rounded"
-                            title="删除"
+                            title={locale === 'ar' ? 'حذف' : 'Delete'} aria-label={locale === 'ar' ? 'حذف اللوحة' : 'Delete canvas'}
                           >
                             <Trash2 className="h-3.5 w-3.5 text-destructive" />
                           </button>
@@ -205,11 +205,11 @@ export default function Topbar({
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={onNewVersion}>
               <Plus className="mr-2 h-4 w-4" />
-              新建画布
+              {locale === 'ar' ? 'لوحة جديدة' : 'New canvas'}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onDuplicateVersion}>
               <Copy className="mr-2 h-4 w-4" />
-              复制当前画布
+              {locale === 'ar' ? 'نسخ اللوحة الحالية' : 'Duplicate canvas'}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -307,7 +307,9 @@ export default function Topbar({
                 ? 'bg-primary text-primary-foreground hover:bg-primary/90'
                 : 'hover:bg-accent text-muted-foreground'
             }`}
-            title={isPanMode ? '退出拖拽模式 (点击或按ESC)' : '进入拖拽模式 (或按住空格键)'}
+            title={locale === 'ar' ? (isPanMode ? 'إنهاء وضع التحريك (Esc)' : 'وضع تحريك اللوحة (مسافة)') : (isPanMode ? 'Exit pan mode (Esc)' : 'Pan canvas (Space)')}
+            aria-label={locale === 'ar' ? (isPanMode ? 'إنهاء تحريك اللوحة' : 'تحريك اللوحة') : (isPanMode ? 'Exit pan mode' : 'Pan canvas')}
+            aria-pressed={isPanMode}
           >
             {isPanMode ? (
               <Hand className="h-4 w-4" />
@@ -320,18 +322,21 @@ export default function Topbar({
 
           <button
             onClick={onZoomOut}
+            aria-label={locale === 'ar' ? 'تصغير' : 'Zoom out'}
             className="p-1 rounded hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ZoomOut className="h-4 w-4 text-muted-foreground" />
           </button>
           <button
             onClick={onZoomReset}
+            aria-label={locale === 'ar' ? 'إعادة ضبط التكبير' : 'Reset zoom'}
             className="px-3 py-1 text-sm rounded hover:bg-accent transition-colors text-foreground min-w-[50px]"
           >
             {Math.round(canvasScale * 100)}%
           </button>
           <button
             onClick={onZoomIn}
+            aria-label={locale === 'ar' ? 'تكبير' : 'Zoom in'}
             className="p-1 rounded hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ZoomIn className="h-4 w-4 text-muted-foreground" />
@@ -356,7 +361,7 @@ export default function Topbar({
           {isSharing ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              生成中...
+              {locale === 'ar' ? 'جارٍ التجهيز...' : 'Preparing...'}
             </>
           ) : (
             <>
@@ -369,7 +374,7 @@ export default function Topbar({
         {/* 更多菜单 */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="h-10 w-10">
+            <Button variant="ghost" size="icon" className="h-10 w-10" aria-label={locale === "ar" ? "المزيد من الخيارات" : "More options"}>
               <Menu className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
@@ -377,19 +382,19 @@ export default function Topbar({
             {onOpenSettings && (
               <DropdownMenuItem onClick={onOpenSettings}>
                 <Settings className="h-4 w-4 mr-2" />
-                设置
+                {locale === 'ar' ? 'الإعدادات' : 'Settings'}
               </DropdownMenuItem>
             )}
             {onOpenDonation && (
               <DropdownMenuItem onClick={onOpenDonation}>
                 <Heart className="h-4 w-4 mr-2" />
-                打赏
+                {locale === 'ar' ? 'دعم المشروع' : 'Support project'}
               </DropdownMenuItem>
             )}
             {onOpenWeChat && (
               <DropdownMenuItem onClick={onOpenWeChat}>
                 <QrCode className="h-4 w-4 mr-2" />
-                公众号
+                {locale === 'ar' ? 'القناة' : 'Channel'}
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
