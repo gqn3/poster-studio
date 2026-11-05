@@ -292,8 +292,8 @@ export default function Topbar({
 
       {/* Display preferences remain local to this browser. */}
       <div className="flex items-center gap-2 px-2">
-        <button type="button" className="tapndo-pref" onClick={() => setLocale(locale === 'en' ? 'ar' : 'en')} aria-label="Switch language">{locale === 'en' ? 'العربية' : 'English'}</button>
-        <button type="button" className="tapndo-pref" onClick={() => setDark(!dark)} aria-label="Toggle dark mode">{dark ? '☀' : '☾'}</button>
+        <button type="button" className="tapndo-pref" onClick={() => setLocale(locale === 'en' ? 'ar' : 'en')} aria-label={locale === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}>{locale === 'en' ? 'العربية' : 'English'}</button>
+        <button type="button" className="tapndo-pref" onClick={() => setDark(!dark)} aria-pressed={dark} aria-label={locale === 'ar' ? (dark ? 'تفعيل الوضع الفاتح' : 'تفعيل الوضع الداكن') : (dark ? 'Switch to light mode' : 'Switch to dark mode')}>{dark ? '☀' : '☾'}</button>
       </div>
       {/* 右侧：缩放控制 + 复制 + 下载 */}
       <div className="flex items-center gap-3">
