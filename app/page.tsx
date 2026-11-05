@@ -679,7 +679,7 @@ export default function Home() {
             console.error('❌ 自动保存失败:', error);
             // 如果 localStorage 满了，清理旧版本
             if (error instanceof Error && error.name === 'QuotaExceededError') {
-              console.warn('⚠️ localStorage 已满，请考虑删除一些版本');
+              setToast({ show: true, message: 'Browser storage is full. Your latest changes could not be saved; free space before closing.', type: 'error' });
             }
           }
         }
@@ -863,6 +863,7 @@ export default function Home() {
           await managerRef.current.addImage(file);
         } catch (error) {
           console.error('Failed to add image:', error);
+          setToast({ show: true, message: error instanceof Error ? error.message : 'Could not add image.', type: 'error' });
         }
       }
     };
