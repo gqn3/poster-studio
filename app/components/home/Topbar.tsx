@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Menu, Download, Copy, Plus, ZoomIn, ZoomOut, Pencil, Trash2, Check, X, Database, ChevronDown, Palette, Hand, MousePointer2, Settings, Heart, QrCode, Layout, Save, Share2, Loader2, Github, Sparkles } from 'lucide-react';
+import { Menu, Download, Copy, Plus, ZoomIn, ZoomOut, Pencil, Trash2, Check, X, Database, ChevronDown, Palette, Hand, MousePointer2, Settings, Heart, QrCode, Layout, Save, Github, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { usePreferences } from '@/app/preferences';
 
@@ -60,8 +60,6 @@ export default function Topbar({
   onPanModeToggle,
   onDownload,
   onCopy,
-  onShare,
-  isSharing = false,
   onOpenSettings,
   onOpenDonation,
   onOpenWeChat,
@@ -348,24 +346,7 @@ export default function Topbar({
           <Download className="h-4 w-4" />
           {locale === 'ar' ? 'تنزيل' : 'Download'}
         </Button>
-        <Button
-          className="h-10 px-6 py-2 gap-2 shadow-sm"
-          onClick={onShare}
-          disabled={isSharing}
-        >
-          {isSharing ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              生成中...
-            </>
-          ) : (
-            <>
-              <Share2 className="h-4 w-4" />
-              {locale === 'ar' ? 'مشاركة' : 'Share'}
-            </>
-          )}
-        </Button>
-
+        {/* Public sharing is intentionally unavailable until its API has authenticated ownership checks. */}
         {/* 更多菜单 */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
