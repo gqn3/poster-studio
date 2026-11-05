@@ -50,7 +50,6 @@
     "@chinese-fonts/ysyrxk": "^3.0.0",
     "@chinese-fonts/yzklct": "^3.0.0",
     "@chinese-fonts/zhbtt": "^3.0.0",
-    "@imgly/background-removal": "^1.7.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-label": "^2.1.7",
@@ -76,6 +75,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

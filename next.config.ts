@@ -21,7 +21,6 @@ const nextConfig: NextConfig = {
     if (isServer) {
       config.externals = [
         ...(config.externals || []),
-        '@imgly/background-removal',
         'onnxruntime-node',
         'onnxruntime-web',
       ];
