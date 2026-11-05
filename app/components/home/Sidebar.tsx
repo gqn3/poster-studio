@@ -17,7 +17,6 @@ import {
   Smile,
   Undo2,
   Redo2,
-  Sparkles,
   Square,
   Shapes,
   Pencil,
@@ -48,7 +47,6 @@ export default function Sidebar({
     { id: 'textbox', label: locale === 'ar' ? 'مربع نص' : 'Text box', icon: AlignLeft },
     { id: 'pencil', label: locale === 'ar' ? 'رسم (P)' : 'Draw (P)', icon: Pencil },
     { id: 'image', label: locale === 'ar' ? 'صورة' : 'Image', icon: Image },
-    { id: 'ai-image', label: locale === 'ar' ? 'إنشاء صورة' : 'AI image', icon: Sparkles },
     { id: 'emoji', label: 'Emoji', icon: Smile },
     { id: 'shape', label: locale === 'ar' ? 'شكل' : 'Shape', icon: Square },
     { id: 'icon', label: locale === 'ar' ? 'أيقونات' : 'Icons', icon: Shapes },
@@ -95,6 +93,8 @@ export default function Sidebar({
               size="icon"
               className="h-10 w-10"
               disabled={!canUndo}
+              aria-label={locale === 'ar' ? 'تراجع' : 'Undo'}
+              title={locale === 'ar' ? 'تراجع' : 'Undo'}
               onClick={onUndo}
             >
               <Undo2 className="h-5 w-5" />
@@ -112,6 +112,8 @@ export default function Sidebar({
               size="icon"
               className="h-10 w-10"
               disabled={!canRedo}
+              aria-label={locale === 'ar' ? 'إعادة' : 'Redo'}
+              title={locale === 'ar' ? 'إعادة' : 'Redo'}
               onClick={onRedo}
             >
               <Redo2 className="h-5 w-5" />
