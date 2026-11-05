@@ -61,7 +61,7 @@ export default function Canvas({
       const scaleByWidth = containerWidth / canvasSize.width;
       const scaleByHeight = containerHeight / canvasSize.height;
       // 移除 Math.min(..., 1) 限制，允许画布自动缩小以适应容器
-      const newAutoScale = Math.min(scaleByWidth, scaleByHeight);
+      const newAutoScale = Math.max(0.05, Math.min(scaleByWidth, scaleByHeight));
 
       setAutoScale(newAutoScale);
     };
