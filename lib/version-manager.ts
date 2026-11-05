@@ -17,13 +17,25 @@ export class VersionManager {
     }
   }
 
+  private nextVersionId(): string {
+    const prefix = Date.now().toString();
+    let candidate = prefix;
+    let suffix = 1;
+    while (this.versions.some((version) => version.id === candidate)) {
+      candidate = `${prefix}-${suffix++}`;
+    }
+    return candidate;
+  }
+
   // 创建新版本
   create(name?: string, canvasSize?: CanvasSize) {
     if (this.versions.length >= 5) {
       throw new Error('最多支持 5 个画布');
     }
     const version: CanvasVersion = {
-      id: Date.now().toString(),
+      // Date.now() alone collides when users duplicate/create canvases within one millisecond.
+      // Use an incrementing suffix so IDs stay unique even with a frozen clock.
+      id: this.nextVersionId(),
       name: name || `画布 ${this.versions.length + 1}`,
       data: '',
       canvasSize,
