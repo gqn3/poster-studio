@@ -3,6 +3,8 @@ import "./globals.css";
 import { PreferencesProvider } from "./preferences";
 
 export const metadata: Metadata = {
+  // The editor remains a review build until the release gates are explicitly met.
+  robots: { index: false, follow: false },
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
   title: "TapNDo Studio",
   description: "Design posters and social graphics in your browser.",
