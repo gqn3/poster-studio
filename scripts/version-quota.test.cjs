@@ -37,6 +37,7 @@ test('failed storage writes roll back canvas data, metadata and active selection
   };
   const manager = new loaded.exports.VersionManager();
   const original = manager.getActive();
+  const originalName = original.name;
   manager.update(original.id, 'safe');
   const second = manager.create('second');
   const durable = persisted;
@@ -45,7 +46,7 @@ test('failed storage writes roll back canvas data, metadata and active selection
   assert.throws(() => manager.update(original.id, 'lost'), { name: 'QuotaExceededError' });
   assert.equal(manager.getById(original.id).data, 'safe');
   assert.throws(() => manager.rename(original.id, 'lost name'), { name: 'QuotaExceededError' });
-  assert.equal(manager.getById(original.id).name, original.name);
+  assert.equal(manager.getById(original.id).name, originalName);
   assert.throws(() => manager.delete(second.id), { name: 'QuotaExceededError' });
   assert.equal(manager.getAll().length, 2);
   assert.throws(() => manager.create('unsaved'), { name: 'QuotaExceededError' });
