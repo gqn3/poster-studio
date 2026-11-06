@@ -184,7 +184,7 @@ export default function Topbar({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              if (confirm(locale === "ar" ? `هل تريد حذف اللوحة "${version.name}"؟` : `Delete canvas "${version.name}"?`) {
+                              if (confirm(locale === "ar" ? `هل تريد حذف اللوحة "${version.name}"؟` : `Delete canvas "${version.name}"?`)) {
                                 onDeleteVersion(version.id);
                               }
                             }}

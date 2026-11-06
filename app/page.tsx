@@ -246,6 +246,8 @@ export default function Home() {
         setCanRedo(managerRef.current.canRedo());
       }
     };
+    managerRef.current.onHistoryChange = updateUndoRedoState;
+    if (!activeVersion?.data) managerRef.current.resetHistory();
     managerRef.current.canvas.on('object:added', updateUndoRedoState);
     managerRef.current.canvas.on('object:modified', updateUndoRedoState);
     managerRef.current.canvas.on('object:removed', updateUndoRedoState);
@@ -363,7 +365,6 @@ export default function Home() {
 
         // Esc - 退出当前模式
         if (e.key === 'Escape') {
-          e.preventDefault();
           // 退出画笔模式
           if (managerRef.current.getDrawingMode()) {
             managerRef.current.disableDrawingMode();
@@ -981,6 +982,7 @@ export default function Home() {
         managerRef.current.clear();
         // 清空后启用历史记录
         managerRef.current.setLoadingTemplate(false);
+        managerRef.current.resetHistory();
       } else {
         console.log('📥 加载画布数据，长度:', version.data.length);
         // loadFromJSON 会自动启用历史记录

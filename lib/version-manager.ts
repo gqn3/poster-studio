@@ -58,7 +58,7 @@ export class VersionManager {
       if (this.versions.length >= 5) throw new Error('最多支持 5 个画布');
       const timestamp = Date.now();
       const newVersion: CanvasVersion = {
-        id: timestamp.toString(),
+        id: this.nextVersionId(),
         name: `${source.name} - 副本`,
         data,
         canvasSize: canvasSize || source.canvasSize,
