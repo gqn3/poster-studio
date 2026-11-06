@@ -420,16 +420,21 @@ export default function Home() {
         }
       }
 
-      // 撤销/重做快捷键
-      if (cmdOrCtrl && e.key === 'z' && managerRef.current) {
+      // Keep native undo in focused inputs and Fabric's in-place text editor.
+      // Otherwise the global handler steals text-editing history from the user.
+      if (cmdOrCtrl && e.key.toLowerCase() === 'z' && managerRef.current) {
+        if (isInputFocused || (managerRef.current.canvas.getActiveObject() as any)?.isEditing) {
+          return;
+        }
         e.preventDefault();
         if (e.shiftKey) {
-          // Cmd/Ctrl + Shift + Z = 重做
           managerRef.current.redo();
         } else {
-          // Cmd/Ctrl + Z = 撤销
           managerRef.current.undo();
         }
+        // Keyboard shortcuts must refresh the same disabled states as toolbar clicks.
+        setCanUndo(managerRef.current.canUndo());
+        setCanRedo(managerRef.current.canRedo());
         return;
       }
 
