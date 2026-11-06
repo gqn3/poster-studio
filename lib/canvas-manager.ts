@@ -506,94 +506,23 @@ export class CanvasManager {
     return img;
   }
 
-  // 添加图片（上传到七牛云）
+  // Embed local images in the project so they never leave the browser and can be restored.
   async addImage(file: File): Promise<fabric.Image> {
-    try {
-      console.log('📤 开始上传图片到七牛云...');
-
-      // 上传到七牛云
-      const imageUrl = await this.qiniuUploader.uploadFile(file);
-
-      console.log('✅ 图片上传成功，URL:', imageUrl);
-
-      // 添加到图片库
-      const library = getImageLibrary();
-      library.addImage(imageUrl, file.name);
-
-      // 从七牛云 URL 加载图片
-      const img = await this.loadFabricImage(imageUrl);
-
-      // 计算缩放比例，确保图片不超过画布的 80%
-      const maxWidth = this.width * 0.8;
-      const maxHeight = this.height * 0.8;
-      const scale = Math.min(
-        maxWidth / (img.width || 1),
-        maxHeight / (img.height || 1),
-        1 // 不放大，只缩小
-      );
-
-      img.set({
-        left: this.width / 2,
-        top: this.height / 2,
-        originX: 'center',
-        originY: 'center',
-        scaleX: scale,
-        scaleY: scale,
-      });
-
-      this.canvas.add(img);
-      this.canvas.setActiveObject(img);
-      this.canvas.renderAll();
-      return img;
-    } catch (error) {
-      console.error('❌ 图片上传失败:', error);
-      throw error;
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type) || file.size === 0 || file.size > 2 * 1024 * 1024) {
+      throw new Error('Choose a PNG, JPEG, WebP or GIF image no larger than 2 MB.');
     }
+    const imageUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => typeof reader.result === 'string' ? resolve(reader.result) : reject(new Error('Could not read image.'));
+      reader.onerror = () => reject(new Error('Could not read image.'));
+      reader.readAsDataURL(file);
+    });
+    return this.addImageFromURL(imageUrl, false);
   }
 
-  // 从剪贴板添加图片（上传到七牛云）
   async addImageFromClipboard(blob: Blob): Promise<fabric.Image> {
-    try {
-      console.log('📤 开始上传剪贴板图片到七牛云...');
-
-      // 上传到七牛云
-      const imageUrl = await this.qiniuUploader.uploadBlob(blob);
-
-      console.log('✅ 剪贴板图片上传成功，URL:', imageUrl);
-
-      // 添加到图片库
-      const library = getImageLibrary();
-      library.addImage(imageUrl, `clipboard-${Date.now()}.png`);
-
-      // 从七牛云 URL 加载图片
-      const img = await this.loadFabricImage(imageUrl);
-
-      // 计算缩放比例
-      const maxWidth = this.width * 0.8;
-      const maxHeight = this.height * 0.8;
-      const scale = Math.min(
-        maxWidth / (img.width || 1),
-        maxHeight / (img.height || 1),
-        1
-      );
-
-      img.set({
-        left: this.width / 2,
-        top: this.height / 2,
-        originX: 'center',
-        originY: 'center',
-        scaleX: scale,
-        scaleY: scale,
-      });
-
-      this.canvas.add(img);
-      this.canvas.setActiveObject(img);
-      this.canvas.renderAll();
-      return img;
-    } catch (error) {
-      console.error('❌ 剪贴板图片上传失败:', error);
-      throw error;
-    }
+    return this.addImage(new File([blob], 'clipboard.png', { type: blob.type }));
   }
 
   // 从 URL 添加图片（用于 AI 生图）

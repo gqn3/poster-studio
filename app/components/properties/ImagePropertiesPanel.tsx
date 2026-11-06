@@ -20,7 +20,6 @@ interface ImagePropertiesPanelProps {
   onContrastChange: (value: number) => void;
   onSaturationChange: (value: number) => void;
   onRemoveBackground?: (imageUrl: string) => Promise<void>;
-  onRemoveBackgroundLocal?: (imageUrl: string) => Promise<void>;
   onOpenSettings?: () => void;
   onAIImageTransform?: (imageUrl: string, prompt: string) => Promise<void>;
 }
@@ -38,13 +37,10 @@ export default function ImagePropertiesPanel({
   onContrastChange,
   onSaturationChange,
   onRemoveBackground,
-  onRemoveBackgroundLocal,
   onAIImageTransform,
 }: ImagePropertiesPanelProps) {
   const [activeTab, setActiveTab] = useState('basic');
   const [isRemovingBg, setIsRemovingBg] = useState(false);
-  const [isRemovingBgLocal, setIsRemovingBgLocal] = useState(false);
-  const [localProgress, setLocalProgress] = useState(0);
   const [aiPrompt, setAiPrompt] = useState('');
   const [isTransforming, setIsTransforming] = useState(false);
 
@@ -409,7 +405,7 @@ export default function ImagePropertiesPanel({
                     setIsRemovingBg(false);
                   }
                 }}
-                disabled={isRemovingBg || isRemovingBgLocal || isTransforming}
+                disabled={isRemovingBg || isTransforming}
                 className="w-full"
               >
                 {isRemovingBg ? (
@@ -425,61 +421,10 @@ export default function ImagePropertiesPanel({
                 )}
               </Button>
 
-              {/* 本地 AI 去背景 */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={async () => {
-                  // 获取图片 URL
-                  const imageUrl = selectedObject?._element?.src || selectedObject?.getSrc?.();
-                  if (!imageUrl) {
-                    alert('无法获取图片 URL');
-                    return;
-                  }
-
-                  setIsRemovingBgLocal(true);
-                  setLocalProgress(0);
-
-                  try {
-                    if (onRemoveBackgroundLocal) {
-                      await onRemoveBackgroundLocal(imageUrl);
-                    }
-                  } catch (error) {
-                    console.error('本地去背景失败:', error);
-                    alert(error instanceof Error ? error.message : '本地去背景失败');
-                  } finally {
-                    setIsRemovingBgLocal(false);
-                    setLocalProgress(0);
-                  }
-                }}
-                disabled={isRemovingBg || isRemovingBgLocal || isTransforming}
-                className="w-full"
-              >
-                {isRemovingBgLocal ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span className="text-xs">{localProgress > 0 ? `${localProgress}%` : '处理中...'}</span>
-                  </>
-                ) : (
-                  <span className="text-xs">免费去背景</span>
-                )}
+              <Button variant="outline" size="sm" disabled className="w-full" title="Background removal is paused until its dependency and upload path are safe">
+                <span className="text-xs">Background removal paused / إزالة الخلفية متوقفة مؤقتًا</span>
               </Button>
             </div>
-
-            {/* 进度条 */}
-            {isRemovingBgLocal && localProgress > 0 && (
-              <div className="mt-2">
-                <div className="w-full bg-gray-200 rounded-full h-1.5">
-                  <div
-                    className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
-                    style={{ width: `${localProgress}%` }}
-                  ></div>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* AI 改图 */}
@@ -530,7 +475,7 @@ export default function ImagePropertiesPanel({
                   }
                 }}
                 placeholder="输入提示词，回车生成..."
-                disabled={isTransforming || isRemovingBg || isRemovingBgLocal}
+                disabled={isTransforming || isRemovingBg}
                 rows={2}
                 className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
               />

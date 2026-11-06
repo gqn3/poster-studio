@@ -53,6 +53,7 @@ function normalizeCanvasSize(size?: CanvasSize | null): CanvasSize {
 }
 
 export default function Home() {
+  const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const managerRef = useRef<CanvasManager | null>(null);
   const versionRef = useRef<VersionManager | null>(null);
@@ -678,7 +679,7 @@ export default function Home() {
             console.error('❌ 自动保存失败:', error);
             // 如果 localStorage 满了，清理旧版本
             if (error instanceof Error && error.name === 'QuotaExceededError') {
-              console.warn('⚠️ localStorage 已满，请考虑删除一些版本');
+              setToast({ show: true, message: 'Browser storage is full. Your latest changes could not be saved; free space before closing.', type: 'error' });
             }
           }
         }
@@ -862,6 +863,7 @@ export default function Home() {
           await managerRef.current.addImage(file);
         } catch (error) {
           console.error('Failed to add image:', error);
+          setToast({ show: true, message: error instanceof Error ? error.message : 'Could not add image.', type: 'error' });
         }
       }
     };
@@ -1179,73 +1181,6 @@ export default function Home() {
           setToast({
             show: true,
             message: error instanceof Error ? error.message : '去背景失败',
-            type: 'error'
-          });
-        });
-
-      // 立即返回，不等待去背景完成
-      console.log('💡 占位图已添加，图片正在后台去背景...');
-    } catch (error) {
-      console.error('❌ 添加占位图失败:', error);
-      throw error;
-    }
-  };
-
-  // 本地去背景（@imgly/background-removal - 异步模式，不删除原图）
-  const handleRemoveBackgroundLocal = async (imageUrl: string) => {
-    if (!managerRef.current) return;
-
-    try {
-      console.log('🎨 开始本地去除背景...', imageUrl);
-
-      // 1. 立即添加占位图到画布（不删除原图）
-      console.log('🎨 添加占位图到画布...');
-      const placeholderImage = await managerRef.current.addAIPlaceholder('2048x2048');
-
-      // 2. 异步去背景（不阻塞UI）
-      console.log('🚀 开始异步本地去背景...', { imageUrl });
-
-      // 动态导入 removeBackground（避免 SSR 问题）
-      const { removeBackground } = await import('@imgly/background-removal');
-
-      // 调用本地 AI 去背景
-      // 使用官方 CDN: https://staticimgly.com/@imgly/background-removal-data/1.7.0/dist/
-      removeBackground(imageUrl, {
-        publicPath: 'https://staticimgly.com/@imgly/background-removal-data/1.7.0/dist/',
-        debug: true,
-        model: 'isnet_fp16', // 使用默认模型 (medium, ~80MB)
-        progress: (key: string, current: number, total: number) => {
-          const progress = Math.round((current / total) * 100);
-          console.log(`📊 处理进度 [${key}]: ${progress}%`);
-        },
-      })
-        .then(async (blob) => {
-          console.log('✅ 本地去背景成功，大小:', (blob.size / 1024).toFixed(2), 'KB');
-
-          // 上传到七牛云
-          const qiniuUploader = managerRef.current!.qiniuUploader;
-          const file = new File([blob], 'local-no-bg.png', { type: 'image/png' });
-          const qiniuUrl = await qiniuUploader.uploadFile(file);
-
-          console.log('✅ 上传到七牛云成功:', qiniuUrl);
-
-          // 添加到图片库
-          const library = getImageLibrary();
-          const fileName = qiniuUrl.split('/').pop() || 'local-no-bg.png';
-          const isNew = library.addImage(qiniuUrl, fileName);
-          console.log('📚 去背景图片已保存到图库:', fileName, '是否新图片:', isNew);
-
-          // 替换占位图
-          await managerRef.current?.replaceAIPlaceholder(placeholderImage, qiniuUrl);
-          console.log('✅ 去背景图片已生成并添加到画布');
-          setToast({ show: true, message: '免费去背景成功!', type: 'success' });
-        })
-        .catch((error) => {
-          console.error('❌ 本地去背景失败:', error);
-          managerRef.current?.removeAIPlaceholder(placeholderImage);
-          setToast({
-            show: true,
-            message: error instanceof Error ? error.message : '本地去背景失败',
             type: 'error'
           });
         });
@@ -1933,7 +1868,8 @@ export default function Home() {
           onContextMenu={handleContextMenu}
         />
 
-        {/* 右侧属性面板 - 根据选中对象类型动态切换 */}
+        <button type="button" className="tapndo-panel-toggle" onClick={() => setMobilePanelOpen(!mobilePanelOpen)} aria-expanded={mobilePanelOpen} aria-controls="tapndo-properties">{mobilePanelOpen ? 'Close settings / إغلاق' : 'Settings / الإعدادات'}</button>
+        <div id="tapndo-properties" className={`tapndo-properties ${mobilePanelOpen ? 'is-open' : ''}`}>
         {(() => {
           // 判断对象类型
           const objectType = selectedObject?.type;
@@ -2005,7 +1941,6 @@ export default function Home() {
                 onContrastChange={handleImageContrastChange}
                 onSaturationChange={handleImageSaturationChange}
                 onRemoveBackground={handleRemoveBackground}
-                onRemoveBackgroundLocal={handleRemoveBackgroundLocal}
                 onOpenSettings={() => setShowSettingsDialog(true)}
                 onAIImageTransform={handleAIImageTransform}
               />
@@ -2061,6 +1996,7 @@ export default function Home() {
             />
           );
         })()}
+        </div>
       </div>
 
       {/* 右键菜单 */}

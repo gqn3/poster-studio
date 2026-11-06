@@ -1,0 +1,24 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const Module = require('node:module');
+const ts = require('typescript');
+const source = fs.readFileSync('lib/version-manager.ts', 'utf8');
+const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
+const loaded = new Module('version-manager');
+loaded._compile(compiled, 'version-manager.js');
+
+test('storage quota failure never deletes another project', () => {
+  let saved = '';
+  global.window = {};
+  global.localStorage = { getItem: () => null, setItem: (_key, value) => { if (value.length > 1200) throw new DOMException('full', 'QuotaExceededError'); saved = value; } };
+  const manager = new loaded.exports.VersionManager();
+  const first = manager.getActive();
+  const now = Date.now;
+  Date.now = () => now() + 1000;
+  manager.create('other');
+  Date.now = now;
+  assert.throws(() => manager.update(first.id, 'x'.repeat(2000)), { name: 'QuotaExceededError' });
+  assert.equal(manager.getAll().length, 2);
+  assert.equal(JSON.parse(saved).versions.length, 2);
+});

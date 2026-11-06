@@ -2,6 +2,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { usePreferences } from '@/app/preferences';
 import {
   Tooltip,
   TooltipContent,
@@ -40,16 +41,17 @@ export default function Sidebar({
   onUndo,
   onRedo,
 }: SidebarProps) {
+  const { locale } = usePreferences();
   const tools = [
-    { id: 'select', label: '选择 (V)', icon: MousePointer2 },
-    { id: 'text', label: '单行文本', icon: Type },
-    { id: 'textbox', label: '多行文本', icon: AlignLeft },
-    { id: 'pencil', label: '画笔 (P)', icon: Pencil },
-    { id: 'image', label: '图片', icon: Image },
-    { id: 'ai-image', label: 'AI 生图', icon: Sparkles },
+    { id: 'select', label: locale === 'ar' ? 'تحديد (V)' : 'Select (V)', icon: MousePointer2 },
+    { id: 'text', label: locale === 'ar' ? 'نص' : 'Text', icon: Type },
+    { id: 'textbox', label: locale === 'ar' ? 'مربع نص' : 'Text box', icon: AlignLeft },
+    { id: 'pencil', label: locale === 'ar' ? 'رسم (P)' : 'Draw (P)', icon: Pencil },
+    { id: 'image', label: locale === 'ar' ? 'صورة' : 'Image', icon: Image },
+    { id: 'ai-image', label: locale === 'ar' ? 'إنشاء صورة' : 'AI image', icon: Sparkles },
     { id: 'emoji', label: 'Emoji', icon: Smile },
-    { id: 'shape', label: '形状', icon: Square },
-    { id: 'icon', label: '图标库', icon: Shapes },
+    { id: 'shape', label: locale === 'ar' ? 'شكل' : 'Shape', icon: Square },
+    { id: 'icon', label: locale === 'ar' ? 'أيقونات' : 'Icons', icon: Shapes },
   ];
 
   return (
@@ -69,6 +71,8 @@ export default function Sidebar({
                   variant={isActive ? 'default' : 'ghost'}
                   size="icon"
                   onClick={() => onToolChange(tool.id)}
+                  aria-label={tool.label}
+                  title={tool.label}
                   className="relative h-10 w-10"
                 >
                   <Icon className="h-5 w-5" />
@@ -97,7 +101,7 @@ export default function Sidebar({
             </Button>
           </TooltipTrigger>
           <TooltipContent side="right" sideOffset={2} align="center" alignOffset={4}>
-            <p>撤销</p>
+            <p>{locale === 'ar' ? 'تراجع' : 'Undo'}</p>
           </TooltipContent>
         </Tooltip>
 
@@ -114,7 +118,7 @@ export default function Sidebar({
             </Button>
           </TooltipTrigger>
           <TooltipContent side="right" sideOffset={2} align="center" alignOffset={4}>
-            <p>重做</p>
+            <p>{locale === 'ar' ? 'إعادة' : 'Redo'}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
