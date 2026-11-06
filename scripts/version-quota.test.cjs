@@ -69,7 +69,10 @@ test('failed storage writes roll back canvas data, metadata and active selection
   const original = manager.getActive();
   const originalName = original.name;
   manager.update(original.id, 'safe');
+  const clock = Date.now;
+  Date.now = () => clock() + 1000;
   const second = manager.create('second');
+  Date.now = clock;
   const durable = persisted;
 
   fail = true;
