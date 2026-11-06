@@ -159,8 +159,21 @@ export class VersionManager {
       if (json) {
         try {
           const data = JSON.parse(json);
-          this.versions = data.versions || [];
-          this.activeId = data.activeId || '';
+          // Stored data can be stale or manually modified. Never trust its shape.
+          if (!data || !Array.isArray(data.versions)) {
+            throw new Error('Invalid saved canvas collection');
+          }
+          this.versions = data.versions.filter((version: unknown): version is CanvasVersion => {
+            if (!version || typeof version !== 'object') return false;
+            const candidate = version as Partial<CanvasVersion>;
+            return typeof candidate.id === 'string' &&
+              candidate.id.length > 0 &&
+              typeof candidate.name === 'string' &&
+              typeof candidate.data === 'string' &&
+              typeof candidate.createdAt === 'number' &&
+              typeof candidate.updatedAt === 'number';
+          }).slice(0, 5);
+          this.activeId = typeof data.activeId === 'string' ? data.activeId : '';
         } catch (error) {
           console.error('Failed to load versions:', error);
         }
