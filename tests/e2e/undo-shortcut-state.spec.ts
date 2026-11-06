@@ -18,7 +18,13 @@ test('focused input retains its native undo rather than undoing the canvas', asy
   await page.getByRole('button', { name: 'Text', exact: true }).click();
   const undo = page.getByRole('button', { name: 'Undo', exact: true });
   await expect(undo).toBeEnabled({ timeout: 10000 });
-  const input = page.locator('input:not([type="hidden"])').filter({ visible: true }).first();
+  // An isolated form input makes the focus contract independent of panel layout.
+  await page.evaluate(() => {
+    const input = document.createElement('input');
+    input.setAttribute('aria-label', 'Undo focus probe');
+    document.body.append(input);
+  });
+  const input = page.getByRole('textbox', { name: 'Undo focus probe' });
   await input.focus();
   await input.fill('native undo test');
   await page.keyboard.press('ControlOrMeta+z');
