@@ -1,7 +1,17 @@
 name: Poster Studio MVP verification
 
-# Manual, opt-in verification: do not consume CI minutes on every draft push.
+# Verify draft PRs without requiring a main merge.
 on:
+  pull_request:
+    paths:
+      - '.github/workflows/tapndo-mvp-verification.yml'
+      - 'src/**'
+      - 'app/**'
+      - 'components/**'
+      - 'lib/**'
+      - 'tests/**'
+      - 'scripts/**'
+      - 'package*.json'
   workflow_dispatch:
 
 permissions:
