@@ -17,22 +17,35 @@ export class VersionManager {
     }
   }
 
+  private nextVersionId(): string {
+    const prefix = Date.now().toString();
+    let candidate = prefix;
+    let suffix = 1;
+    while (this.versions.some((version) => version.id === candidate)) {
+      candidate = `${prefix}-${suffix++}`;
+    }
+    return candidate;
+  }
+
   // 创建新版本
   create(name?: string, canvasSize?: CanvasSize) {
     if (this.versions.length >= 5) {
       throw new Error('最多支持 5 个画布');
     }
     const version: CanvasVersion = {
-      id: Date.now().toString(),
+      // Date.now() alone collides when users duplicate/create canvases within one millisecond.
+      // Use an incrementing suffix so IDs stay unique even with a frozen clock.
+      id: this.nextVersionId(),
       name: name || `画布 ${this.versions.length + 1}`,
       data: '',
       canvasSize,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
-    this.versions.push(version);
-    this.save();
-    return version;
+    return this.commitChange(() => {
+      this.versions.push(version);
+      return version;
+    });
   }
 
   // 复制版本
@@ -41,25 +54,32 @@ export class VersionManager {
     if (!source) {
       throw new Error('源版本不存在');
     }
-    const newVersion = this.create(`${source.name} - 副本`, canvasSize || source.canvasSize);
-    newVersion.data = data;
-    this.save();
-    return newVersion;
+    return this.commitChange(() => {
+      if (this.versions.length >= 5) throw new Error('最多支持 5 个画布');
+      const timestamp = Date.now();
+      const newVersion: CanvasVersion = {
+        id: this.nextVersionId(),
+        name: `${source.name} - 副本`,
+        data,
+        canvasSize: canvasSize || source.canvasSize,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      };
+      this.versions.push(newVersion);
+      return newVersion;
+    });
   }
 
   // 更新版本
   update(id: string, data: string, thumbnail?: string, canvasSize?: CanvasSize) {
     const version = this.versions.find((v) => v.id === id);
     if (version) {
-      version.data = data;
-      version.updatedAt = Date.now();
-      if (canvasSize) {
-        version.canvasSize = canvasSize;
-      }
-      if (thumbnail) {
-        version.thumbnail = thumbnail;
-      }
-      this.save();
+      this.commitChange(() => {
+        version.data = data;
+        version.updatedAt = Date.now();
+        if (canvasSize) version.canvasSize = canvasSize;
+        if (thumbnail) version.thumbnail = thumbnail;
+      });
     }
   }
 
@@ -67,9 +87,10 @@ export class VersionManager {
   rename(id: string, newName: string) {
     const version = this.versions.find((v) => v.id === id);
     if (version) {
-      version.name = newName;
-      version.updatedAt = Date.now();
-      this.save();
+      this.commitChange(() => {
+        version.name = newName;
+        version.updatedAt = Date.now();
+      });
     }
   }
 
@@ -78,11 +99,10 @@ export class VersionManager {
     if (this.versions.length === 1) {
       throw new Error('至少需要保留 1 个画布');
     }
-    this.versions = this.versions.filter((v) => v.id !== id);
-    if (this.activeId === id) {
-      this.activeId = this.versions[0].id;
-    }
-    this.save();
+    this.commitChange(() => {
+      this.versions = this.versions.filter((v) => v.id !== id);
+      if (this.activeId === id) this.activeId = this.versions[0].id;
+    });
   }
 
   // 获取所有版本
@@ -102,8 +122,23 @@ export class VersionManager {
 
   // 设置激活版本
   setActive(id: string) {
-    this.activeId = id;
-    this.save();
+    if (!this.versions.some((version) => version.id === id)) return;
+    this.commitChange(() => { this.activeId = id; });
+  }
+
+  // Keep in-memory state consistent with the last durable save when storage is full.
+  private commitChange<T>(change: () => T): T {
+    const previousVersions = this.versions.map((version) => ({ ...version }));
+    const previousActiveId = this.activeId;
+    try {
+      const result = change();
+      this.save();
+      return result;
+    } catch (error) {
+      this.versions = previousVersions;
+      this.activeId = previousActiveId;
+      throw error;
+    }
   }
 
   // 保存到 localStorage
@@ -124,8 +159,21 @@ export class VersionManager {
       if (json) {
         try {
           const data = JSON.parse(json);
-          this.versions = data.versions || [];
-          this.activeId = data.activeId || '';
+          // Stored data can be stale or manually modified. Never trust its shape.
+          if (!data || !Array.isArray(data.versions)) {
+            throw new Error('Invalid saved canvas collection');
+          }
+          this.versions = data.versions.filter((version: unknown): version is CanvasVersion => {
+            if (!version || typeof version !== 'object') return false;
+            const candidate = version as Partial<CanvasVersion>;
+            return typeof candidate.id === 'string' &&
+              candidate.id.length > 0 &&
+              typeof candidate.name === 'string' &&
+              typeof candidate.data === 'string' &&
+              typeof candidate.createdAt === 'number' &&
+              typeof candidate.updatedAt === 'number';
+          }).slice(0, 5);
+          this.activeId = typeof data.activeId === 'string' ? data.activeId : '';
         } catch (error) {
           console.error('Failed to load versions:', error);
         }

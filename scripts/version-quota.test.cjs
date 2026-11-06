@@ -22,3 +22,95 @@ test('storage quota failure never deletes another project', () => {
   assert.equal(manager.getAll().length, 2);
   assert.equal(JSON.parse(saved).versions.length, 2);
 });
+
+test('rapid canvas creation and duplication never reuse IDs, including after reload', () => {
+  let saved = '';
+  global.window = {};
+  global.localStorage = {
+    getItem: () => saved || null,
+    setItem: (_key, value) => { saved = value; },
+  };
+  const originalNow = Date.now;
+  try {
+    Date.now = () => 1700000000000;
+    const manager = new loaded.exports.VersionManager();
+    const first = manager.getActive();
+    const second = manager.create('Second');
+    const copy = manager.duplicate(first.id, '{"objects":[]}', { width: 100, height: 100 });
+    const fourth = manager.create('Fourth');
+    const ids = manager.getAll().map((version) => version.id);
+    assert.equal(new Set(ids).size, 4);
+    assert.equal(copy.data, '{"objects":[]}');
+    assert.notEqual(first.id, second.id);
+    assert.notEqual(copy.id, fourth.id);
+    const reloaded = new loaded.exports.VersionManager();
+    assert.deepEqual(reloaded.getAll().map((version) => version.id), ids);
+    assert.equal(reloaded.getById(copy.id).data, '{"objects":[]}');
+  } finally {
+    Date.now = originalNow;
+    delete global.window;
+    delete global.localStorage;
+  }
+});
+
+
+test('failed storage writes roll back canvas data, metadata and active selection', () => {
+  let persisted = '';
+  let fail = false;
+  global.window = {};
+  global.localStorage = {
+    getItem: () => persisted || null,
+    setItem: (_key, value) => {
+      if (fail) throw new DOMException('full', 'QuotaExceededError');
+      persisted = value;
+    },
+  };
+  const manager = new loaded.exports.VersionManager();
+  const original = manager.getActive();
+  const originalName = original.name;
+  manager.update(original.id, 'safe');
+  const clock = Date.now;
+  Date.now = () => clock() + 1000;
+  const second = manager.create('second');
+  Date.now = clock;
+  const durable = persisted;
+
+  fail = true;
+  assert.throws(() => manager.update(original.id, 'lost'), { name: 'QuotaExceededError' });
+  assert.equal(manager.getById(original.id).data, 'safe');
+  assert.throws(() => manager.rename(original.id, 'lost name'), { name: 'QuotaExceededError' });
+  assert.equal(manager.getById(original.id).name, originalName);
+  assert.throws(() => manager.delete(second.id), { name: 'QuotaExceededError' });
+  assert.equal(manager.getAll().length, 2);
+  assert.throws(() => manager.create('unsaved'), { name: 'QuotaExceededError' });
+  assert.equal(manager.getAll().length, 2);
+  assert.throws(() => manager.duplicate(original.id, 'unsaved copy'), { name: 'QuotaExceededError' });
+  assert.equal(manager.getAll().length, 2);
+  assert.throws(() => manager.setActive(second.id), { name: 'QuotaExceededError' });
+  assert.equal(manager.getActive().id, original.id);
+  manager.setActive('does-not-exist');
+  assert.equal(manager.getActive().id, original.id);
+  assert.equal(persisted, durable);
+  fail = false;
+  manager.update(original.id, 'recovered');
+  assert.equal(JSON.parse(persisted).versions.find((v) => v.id === original.id).data, 'recovered');
+});
+
+
+test('malformed persisted canvas records do not crash initialization or expose invalid versions', () => {
+  const invalid = [
+    { id: null, name: 'broken', data: '', createdAt: 1, updatedAt: 1 },
+    { id: 'valid', name: 'kept', data: '{}', createdAt: 1, updatedAt: 1 },
+    { id: 'missing-data', name: 'broken', createdAt: 1, updatedAt: 1 },
+  ];
+  let persisted = JSON.stringify({ versions: invalid, activeId: 'missing-data' });
+  global.window = {};
+  global.localStorage = {
+    getItem: () => persisted,
+    setItem: (_key, value) => { persisted = value; },
+  };
+  const manager = new loaded.exports.VersionManager();
+  assert.deepEqual(manager.getAll().map(v => v.id), ['valid']);
+  assert.equal(manager.getActive().id, 'valid');
+  assert.equal(JSON.parse(persisted).activeId, 'valid');
+});

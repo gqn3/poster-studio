@@ -60,6 +60,7 @@ export default function Home() {
 
   const [versions, setVersions] = useState<CanvasVersion[]>([]);
   const [activeId, setActiveId] = useState('');
+  const activeIdRef = useRef('');
   const [selectedObject, setSelectedObject] = useState<any>(null);
   const [activeTool, setActiveTool] = useState('text');
   const [canvasScale, setCanvasScale] = useState(1);
@@ -138,6 +139,7 @@ export default function Home() {
     });
 
     setVersions(allVersions);
+    activeIdRef.current = activeVersion!.id;
     setActiveId(activeVersion!.id);
 
     if (activeVersion?.data) {
@@ -246,6 +248,8 @@ export default function Home() {
         setCanRedo(managerRef.current.canRedo());
       }
     };
+    managerRef.current.onHistoryChange = updateUndoRedoState;
+    if (!activeVersion?.data) managerRef.current.resetHistory();
     managerRef.current.canvas.on('object:added', updateUndoRedoState);
     managerRef.current.canvas.on('object:modified', updateUndoRedoState);
     managerRef.current.canvas.on('object:removed', updateUndoRedoState);
@@ -363,7 +367,6 @@ export default function Home() {
 
         // Esc - 退出当前模式
         if (e.key === 'Escape') {
-          e.preventDefault();
           // 退出画笔模式
           if (managerRef.current.getDrawingMode()) {
             managerRef.current.disableDrawingMode();
@@ -420,16 +423,21 @@ export default function Home() {
         }
       }
 
-      // 撤销/重做快捷键
-      if (cmdOrCtrl && e.key === 'z' && managerRef.current) {
+      // Keep native undo in focused inputs and Fabric's in-place text editor.
+      // Otherwise the global handler steals text-editing history from the user.
+      if (cmdOrCtrl && e.key.toLowerCase() === 'z' && managerRef.current) {
+        if (isInputFocused || (managerRef.current.canvas.getActiveObject() as any)?.isEditing) {
+          return;
+        }
         e.preventDefault();
         if (e.shiftKey) {
-          // Cmd/Ctrl + Shift + Z = 重做
           managerRef.current.redo();
         } else {
-          // Cmd/Ctrl + Z = 撤销
           managerRef.current.undo();
         }
+        // Keyboard shortcuts must refresh the same disabled states as toolbar clicks.
+        setCanUndo(managerRef.current.canUndo());
+        setCanRedo(managerRef.current.canRedo());
         return;
       }
 
@@ -622,35 +630,23 @@ export default function Home() {
     };
   }, []); // 空依赖数组，只在组件挂载时执行一次
 
-  // 页面卸载前保存数据
+  // Save the active canvas on browser exit. A canvas switch saves explicitly;
+  // effect cleanup must never save the newly displayed canvas under the old ID.
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (managerRef.current && versionRef.current && activeId) {
-        // 🔥 检查是否正在加载模板，避免保存空数据
-        if (managerRef.current.getLoadingTemplate()) {
-          console.log('⚠️ 正在加载模板，跳过页面卸载前保存');
-          return;
-        }
-
-        const data = managerRef.current.toJSON();
-        const currentCanvasSize = canvasSizeRef.current;
-        versionRef.current.update(activeId, data, undefined, currentCanvasSize);
-        console.log('💾 页面卸载前保存:', {
-          版本ID: activeId,
-          数据大小: data.length,
-          画布尺寸: `${currentCanvasSize.width}×${currentCanvasSize.height}`,
-        });
+      const manager = managerRef.current;
+      const versions = versionRef.current;
+      const id = activeIdRef.current;
+      if (!manager || !versions || !id || manager.getLoadingTemplate()) return;
+      try {
+        versions.update(id, manager.toJSON(), undefined, canvasSizeRef.current);
+      } catch (error) {
+        console.error('Could not save canvas on exit:', error);
       }
     };
-
     window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      // 组件卸载时也保存一次
-      handleBeforeUnload();
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [activeId]);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   // 自动保存（增加间隔，减少 localStorage 写入）
   useEffect(() => {
@@ -976,6 +972,7 @@ export default function Home() {
         managerRef.current.clear();
         // 清空后启用历史记录
         managerRef.current.setLoadingTemplate(false);
+        managerRef.current.resetHistory();
       } else {
         console.log('📥 加载画布数据，长度:', version.data.length);
         // loadFromJSON 会自动启用历史记录
@@ -985,6 +982,7 @@ export default function Home() {
       console.error('❌ 未找到版本:', id);
     }
 
+    activeIdRef.current = id;
     setActiveId(id);
     setVersions(versionRef.current.getAll());
   };
@@ -1436,86 +1434,44 @@ export default function Home() {
         ratio: validTemplate.canvasSize.width > validTemplate.canvasSize.height ? '4:3' : '3:4',
       };
 
-      // 更新画布尺寸
-      canvasSizeRef.current = newCanvasSize;
-      setCanvasSize(newCanvasSize);
-
-      // 重新创建 CanvasManager
-      if (managerRef.current) {
-        managerRef.current.dispose();
-      }
-      if (!canvasRef.current) return;
-
-      // 创建新的 CanvasManager
-      managerRef.current = new CanvasManager(
-        canvasRef.current,
-        validTemplate.canvasSize.width,
-        validTemplate.canvasSize.height
-      );
-
-      // 🆕 立即设置加载模板标志，禁用历史记录保存
-      // 必须在应用模板之前设置，因为会触发事件
-      managerRef.current.setLoadingTemplate(true);
-      console.log('🎨 开始应用模板...');
-
+      // Keep the existing manager and its selection, context-menu and history listeners.
+      // Parse first so an invalid template cannot clear the current canvas.
+      const canvasData = JSON.parse(validTemplate.canvasJSON);
+      const manager = managerRef.current;
+      if (!manager) return;
+      const previousData = manager.toJSON();
+      const previousSize = canvasSizeRef.current;
+      manager.setLoadingTemplate(true);
       try {
-        // 🔥 直接应用模板 JSON 数据，不依赖 templateManager
-        // 这样可以支持公开模板（不在本地存储中）
-        const canvasData = JSON.parse(validTemplate.canvasJSON);
-        console.log('📦 模板数据:', canvasData);
-
-        // 清空画布
-        managerRef.current.canvas.clear();
-
-        // 设置背景色（如果有）
-        if (validTemplate.canvasJSON.includes('backgroundColor')) {
-          const bgColor = canvasData.backgroundColor || '#ffffff';
-          managerRef.current.canvas.backgroundColor = bgColor;
-        }
-
-        // 加载对象
-        await managerRef.current!.canvas.loadFromJSON(canvasData, (o: any, object: any) => {
-          // 对象加载回调
-          console.log('📦 加载对象:', object?.type);
-        });
-        console.log('✅ 模板对象加载完成');
-        managerRef.current!.canvas.renderAll();
-
-        console.log('✅ 模板应用完成');
+        manager.resize(newCanvasSize.width, newCanvasSize.height);
+        await manager.canvas.loadFromJSON(canvasData);
+        manager.rebindGroupEvents();
+        manager.canvas.renderAll();
+        canvasSizeRef.current = newCanvasSize;
+        setCanvasSize(newCanvasSize);
+        setSelectedObject(null);
       } catch (error) {
-        console.error('❌ 模板应用失败:', error);
+        // Restore the previously edited canvas if loading a template fails.
+        manager.resize(previousSize.width, previousSize.height);
+        await manager.canvas.loadFromJSON(previousData);
+        manager.rebindGroupEvents();
+        manager.canvas.renderAll();
         setToast({ show: true, message: '模板应用失败', type: 'error' });
+        console.error('Template application failed:', error);
+        return;
       } finally {
-        // 🆕 无论成功失败都要恢复历史记录保存
-        managerRef.current.setLoadingTemplate(false);
-        console.log('✅ 已恢复历史记录保存');
+        manager.setLoadingTemplate(false);
+        manager.resetHistory();
       }
 
-      // 重新绑定事件
-      managerRef.current.canvas.on('selection:created', (e) => {
-        setSelectedObject(e.selected?.[0]);
-      });
-      managerRef.current.canvas.on('selection:updated', (e) => {
-        setSelectedObject(e.selected?.[0]);
-      });
-      managerRef.current.canvas.on('selection:cleared', () => {
-        setSelectedObject(null);
-      });
-
-      // 等待足够长的时间确保 canvas 完全初始化
-      // 使用 setTimeout 而不是 requestAnimationFrame，因为需要更长的延迟
-      setTimeout(() => {
-        if (versionRef.current && managerRef.current) {
-          try {
-            console.log('💾 开始保存到版本历史...');
-            const canvasJSON = managerRef.current.toJSON();
-            versionRef.current.update(activeId, canvasJSON, undefined, newCanvasSize);
-            console.log('✅ 模板应用后已保存到版本历史');
-          } catch (error) {
-            console.error('❌ 保存版本历史失败:', error);
-          }
-        }
-      }, 300); // 延迟 300ms
+      // Persist this specific canvas before allowing a later canvas switch to replace it.
+      try {
+        versionRef.current?.update(activeId, manager.toJSON(), undefined, newCanvasSize);
+      } catch (error) {
+        console.error('Could not save applied template:', error);
+        setToast({ show: true, message: 'Unable to save this canvas. Free browser storage and try again.', type: 'error' });
+        return;
+      }
 
       setToast({ show: true, message: '模板应用成功', type: 'success' });
     } catch (error) {

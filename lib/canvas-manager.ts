@@ -17,6 +17,7 @@ export class CanvasManager {
   private isUndoRedoing: boolean = false;
   private isLoadingTemplate: boolean = false; // 🆕 标记是否正在加载模板
   private saveHistoryTimer: NodeJS.Timeout | null = null;
+  onHistoryChange?: () => void;
   public qiniuUploader: QiniuUploader; // 改为 public，允许外部访问
 
   // 图片裁剪相关
@@ -3121,12 +3122,9 @@ export class CanvasManager {
       this.rebindGroupEvents();
       this.canvas.renderAll();
 
-      // 🆕 延迟恢复历史记录状态，确保渲染完成
-      setTimeout(() => {
-        // 如果 enableHistoryAfterLoad 为 true，则启用历史记录；否则恢复之前的状态
-        this.isLoadingTemplate = enableHistoryAfterLoad ? false : wasLoadingTemplate;
-        console.log('✅ 画布加载完成, isLoadingTemplate =', this.isLoadingTemplate);
-      }, 100);
+      // Object load events were ignored while loading; restore history before accepting the next edit.
+      this.isLoadingTemplate = enableHistoryAfterLoad ? false : wasLoadingTemplate;
+      if (enableHistoryAfterLoad) this.resetHistory();
     }).catch((error) => {
       console.error('❌ 从 JSON 加载画布失败:', error);
       this.isLoadingTemplate = wasLoadingTemplate;
@@ -3145,7 +3143,7 @@ export class CanvasManager {
   }
 
   // 重新绑定所有 Group 对象的双击事件
-  private rebindGroupEvents() {
+  rebindGroupEvents() {
     const objects = this.canvas.getObjects();
 
     objects.forEach((obj: any) => {
@@ -3619,12 +3617,21 @@ export class CanvasManager {
 
   // 调度历史记录保存（防抖）
   private scheduleHistorySave() {
+    if (this.isLoadingTemplate || this.isUndoRedoing) return;
     if (this.saveHistoryTimer) {
       clearTimeout(this.saveHistoryTimer);
     }
     this.saveHistoryTimer = setTimeout(() => {
       this.saveHistory();
     }, 300); // 300ms 防抖
+  }
+
+  // A new canvas or a restored version starts with its own undo baseline.
+  resetHistory() {
+    if (this.saveHistoryTimer) clearTimeout(this.saveHistoryTimer);
+    this.history = [];
+    this.historyIndex = -1;
+    this.saveHistory();
   }
 
   // 保存历史记录
@@ -3640,11 +3647,6 @@ export class CanvasManager {
 
     try {
       // 再次检查 _objects，因为可能在 try 块内部才出错
-      const objects = this.canvas.getObjects();
-      if (!objects || objects.length === 0) {
-        console.warn('⚠️ Canvas 没有对象，跳过历史记录保存');
-        return;
-      }
 
       // 使用更安全的方式调用 toJSON
       let canvasData;
@@ -3693,6 +3695,7 @@ export class CanvasManager {
         this.history.shift();
         this.historyIndex--;
       }
+      this.onHistoryChange?.();
     } catch (error) {
       console.error('❌ 保存历史记录失败:', error);
       // 静默失败，不影响用户操作
