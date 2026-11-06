@@ -95,3 +95,22 @@ test('failed storage writes roll back canvas data, metadata and active selection
   manager.update(original.id, 'recovered');
   assert.equal(JSON.parse(persisted).versions.find((v) => v.id === original.id).data, 'recovered');
 });
+
+
+test('malformed persisted canvas records do not crash initialization or expose invalid versions', () => {
+  const invalid = [
+    { id: null, name: 'broken', data: '', createdAt: 1, updatedAt: 1 },
+    { id: 'valid', name: 'kept', data: '{}', createdAt: 1, updatedAt: 1 },
+    { id: 'missing-data', name: 'broken', createdAt: 1, updatedAt: 1 },
+  ];
+  let persisted = JSON.stringify({ versions: invalid, activeId: 'missing-data' });
+  global.window = {};
+  global.localStorage = {
+    getItem: () => persisted,
+    setItem: (_key, value) => { persisted = value; },
+  };
+  const manager = new loaded.exports.VersionManager();
+  assert.deepEqual(manager.getAll().map(v => v.id), ['valid']);
+  assert.equal(manager.getActive().id, 'valid');
+  assert.equal(JSON.parse(persisted).activeId, 'valid');
+});
