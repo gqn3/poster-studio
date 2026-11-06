@@ -22,3 +22,42 @@ test('storage quota failure never deletes another project', () => {
   assert.equal(manager.getAll().length, 2);
   assert.equal(JSON.parse(saved).versions.length, 2);
 });
+
+
+test('failed storage writes roll back canvas data, metadata and active selection', () => {
+  let persisted = '';
+  let fail = false;
+  global.window = {};
+  global.localStorage = {
+    getItem: () => persisted || null,
+    setItem: (_key, value) => {
+      if (fail) throw new DOMException('full', 'QuotaExceededError');
+      persisted = value;
+    },
+  };
+  const manager = new loaded.exports.VersionManager();
+  const original = manager.getActive();
+  manager.update(original.id, 'safe');
+  const second = manager.create('second');
+  const durable = persisted;
+
+  fail = true;
+  assert.throws(() => manager.update(original.id, 'lost'), { name: 'QuotaExceededError' });
+  assert.equal(manager.getById(original.id).data, 'safe');
+  assert.throws(() => manager.rename(original.id, 'lost name'), { name: 'QuotaExceededError' });
+  assert.equal(manager.getById(original.id).name, original.name);
+  assert.throws(() => manager.delete(second.id), { name: 'QuotaExceededError' });
+  assert.equal(manager.getAll().length, 2);
+  assert.throws(() => manager.create('unsaved'), { name: 'QuotaExceededError' });
+  assert.equal(manager.getAll().length, 2);
+  assert.throws(() => manager.duplicate(original.id, 'unsaved copy'), { name: 'QuotaExceededError' });
+  assert.equal(manager.getAll().length, 2);
+  assert.throws(() => manager.setActive(second.id), { name: 'QuotaExceededError' });
+  assert.equal(manager.getActive().id, original.id);
+  manager.setActive('does-not-exist');
+  assert.equal(manager.getActive().id, original.id);
+  assert.equal(persisted, durable);
+  fail = false;
+  manager.update(original.id, 'recovered');
+  assert.equal(JSON.parse(persisted).versions.find((v) => v.id === original.id).data, 'recovered');
+});
