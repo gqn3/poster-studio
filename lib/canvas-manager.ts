@@ -3143,7 +3143,7 @@ export class CanvasManager {
   }
 
   // 重新绑定所有 Group 对象的双击事件
-  private rebindGroupEvents() {
+  rebindGroupEvents() {
     const objects = this.canvas.getObjects();
 
     objects.forEach((obj: any) => {

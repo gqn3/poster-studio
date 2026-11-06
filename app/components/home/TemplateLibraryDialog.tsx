@@ -6,6 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePreferences } from '@/app/preferences';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,22 @@ export default function TemplateLibraryDialog({
   onApplyTemplate,
   currentCanvasSize,
 }: TemplateLibraryDialogProps) {
+  const { locale } = usePreferences();
+  const ar = locale === 'ar';
+  const label = (en: string, arabic: string) => ar ? arabic : en;
+  const templateLabel = (template: Template) => template.isPreset
+    ? `${label('Quote card', 'بطاقة اقتباس')} · ${template.canvasSize.width}×${template.canvasSize.height}`
+    : template.name;
+  const categoryLabels: Record<string, string> = {
+    all: label('All templates', 'كل القوالب'),
+    '自定义': label('My templates', 'قوالبي'),
+    '3:4 竖版': label('3:4 Portrait', '3:4 عمودي'),
+    '1:1 方形': label('1:1 Square', '1:1 مربع'),
+    '4:3 横版': label('4:3 Landscape', '4:3 أفقي'),
+    '16:9 横版': label('16:9 Landscape', '16:9 أفقي'),
+    '9:16 竖版': label('9:16 Portrait', '9:16 عمودي'),
+    '21:9 超宽': label('21:9 Ultrawide', '21:9 عريض'),
+  };
   const [templates, setTemplates] = useState<Template[]>([]);
   const [publicTemplates, setPublicTemplates] = useState<Template[]>([]); // 🆕 网友分享的模板
   const [selectedCategory, setSelectedCategory] = useState<TemplateCategory | 'all' | '网友分享'>('all');
@@ -197,8 +214,7 @@ export default function TemplateLibraryDialog({
         console.log(`📸 ${t.name}: ${t.thumbnail?.substring(0, 50)}...`);
       });
 
-      // 🆕 加载公开模板
-      loadPublicTemplates();
+      // Public sharing remains disabled pending security review.
     }
   }, [open]);
 
@@ -249,7 +265,7 @@ export default function TemplateLibraryDialog({
     // 否则显示本地模板
     return templates.filter(template => {
       const matchCategory = selectedCategory === 'all' || template.category === selectedCategory;
-      const matchSearch = template.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchSearch = `${template.name} ${templateLabel(template)}`.toLowerCase().includes(searchQuery.toLowerCase());
 
       // 🆕 如果不显示所有尺寸，则只显示匹配当前画布比例的模板
       let matchSize = true;
@@ -267,7 +283,6 @@ export default function TemplateLibraryDialog({
   const categories: (TemplateCategory | 'all' | '网友分享')[] = [
     'all',
     '自定义',
-    '网友分享', // 🆕 新增网友分享分类
     '3:4 竖版',
     '1:1 方形',
     '4:3 横版',
@@ -284,11 +299,11 @@ export default function TemplateLibraryDialog({
     const template = manager.getById(templateId);
 
     if (template?.isPreset) {
-      alert('预设模板不能删除');
+      alert(label('Preset templates cannot be deleted.', 'لا يمكن حذف القوالب الجاهزة.'));
       return;
     }
 
-    if (confirm('确定要删除这个模板吗？')) {
+    if (confirm(label('Delete this template?', 'هل تريد حذف هذا القالب؟'))) {
       manager.delete(templateId);
       setTemplates(manager.getAll());
     }
@@ -313,7 +328,7 @@ export default function TemplateLibraryDialog({
       <DialogContent className="max-w-[1000px] max-h-[80vh] p-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <div className="flex items-center justify-between">
-            <DialogTitle>模板库</DialogTitle>
+            <DialogTitle>{label('Template library', 'مكتبة القوالب')}</DialogTitle>
             {/* 调试按钮：只在按下"aaaa"后显示 */}
             {debugMode && (
               <div className="flex gap-2">
@@ -357,7 +372,7 @@ export default function TemplateLibraryDialog({
                         : 'text-gray-700 hover:bg-gray-200'
                     }`}
                   >
-                    <span>{category === 'all' ? '全部模板' : category}</span>
+                    <span>{categoryLabels[category] ?? category}</span>
                     <span className={`text-xs ${selectedCategory === category ? 'text-gray-300' : 'text-gray-400'}`}>
                       {count}
                     </span>
@@ -375,7 +390,7 @@ export default function TemplateLibraryDialog({
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   type="text"
-                  placeholder="搜索模板..."
+                  placeholder={label('Search templates', 'ابحث عن قالب')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -386,16 +401,16 @@ export default function TemplateLibraryDialog({
               {currentCanvasSize && (
                 <div className="flex items-center justify-between text-sm">
                   <div className="text-gray-600">
-                    当前画布：{currentCanvasSize.width} × {currentCanvasSize.height}
+                    {label('Current canvas:', 'اللوحة الحالية:')} {currentCanvasSize.width} × {currentCanvasSize.height}
                     {!showAllSizes && (
-                      <span className="ml-2 text-gray-900">（仅显示匹配比例）</span>
+                      <span className="ml-2 text-gray-900">{label('(matching aspect ratio)', '(النسبة المطابقة)')}</span>
                     )}
                   </div>
                   <button
                     onClick={() => setShowAllSizes(!showAllSizes)}
                     className="text-gray-900 hover:text-gray-700 underline"
                   >
-                    {showAllSizes ? '只看匹配比例' : '显示所有尺寸'}
+                    {showAllSizes ? label('Matching ratio only', 'النسبة المطابقة فقط') : label('Show all sizes', 'كل المقاسات')}
                   </button>
                 </div>
               )}
@@ -408,19 +423,27 @@ export default function TemplateLibraryDialog({
                 <div className="flex items-center justify-center h-full text-gray-400">
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-2"></div>
-                    <div>加载中...</div>
+                    <div>{label('Loading…', 'جارٍ التحميل…')}</div>
                   </div>
                 </div>
               ) : filteredTemplates.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-gray-400">
-                  {selectedCategory === '网友分享' ? '暂无公开模板' : '暂无模板'}
+                  {label('No templates found', 'لم يُعثر على قوالب')}
                 </div>
               ) : (
-                <div className="grid grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                   {filteredTemplates.map(template => (
                     <div
                       key={template.id}
-                      className="group cursor-pointer"
+                      className="group cursor-pointer focus-visible:outline focus-visible:outline-2"
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(event) => {
+                        if (event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+                          event.preventDefault();
+                          handleTemplateClick(template);
+                        }
+                      }}
                       onClick={() => handleTemplateClick(template)}
                     >
                       {/* 缩略图 */}
@@ -428,14 +451,14 @@ export default function TemplateLibraryDialog({
                         {/* 图片 */}
                         <img
                           src={template.thumbnail || ''}
-                          alt={template.name}
+                          alt={templateLabel(template)}
                           style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
                         />
 
                         {/* Hover 遮罩 - 只在 hover 时显示，不影响图片 */}
                         <div className="absolute inset-x-0 bottom-0 flex items-end justify-center pb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ pointerEvents: 'none' }}>
                           <div className="bg-white px-4 py-2 rounded-full shadow-lg" style={{ pointerEvents: 'auto' }}>
-                            <span className="text-sm font-medium text-gray-900">点击使用</span>
+                            <span className="text-sm font-medium text-gray-900">{label('Use template', 'استخدام القالب')}</span>
                           </div>
                         </div>
 
@@ -443,6 +466,7 @@ export default function TemplateLibraryDialog({
                         {!template.isPreset && selectedCategory !== '网友分享' && (
                           <button
                             onClick={(e) => handleDelete(template.id, e)}
+                            aria-label={label('Delete template', 'حذف القالب')}
                             className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-10"
                           >
                             <Trash2 className="h-3 w-3" />
@@ -453,7 +477,7 @@ export default function TemplateLibraryDialog({
                       {/* 模板名称（独立显示在缩略图下方） */}
                       <div className="mt-2 text-center">
                         <div className="font-medium text-sm text-gray-900 truncate px-1">
-                          {template.name}
+                          {templateLabel(template)}
                         </div>
                         <div className="text-xs text-gray-500 mt-0.5">
                           {template.canvasSize.width} × {template.canvasSize.height}
@@ -473,14 +497,14 @@ export default function TemplateLibraryDialog({
         <Dialog open={!!confirmTemplate} onOpenChange={() => setConfirmTemplate(null)}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>使用模板</DialogTitle>
+              <DialogTitle>{label('Use template', 'استخدام القالب')}</DialogTitle>
             </DialogHeader>
             <div className="py-4">
               <p className="text-sm text-gray-600 mb-4">
-                确定要使用「<span className="font-semibold text-gray-900">{confirmTemplate.name}</span>」模板吗？
+                {label('Use this template?', 'هل تريد استخدام هذا القالب؟')} <span className="font-semibold text-gray-900">{templateLabel(confirmTemplate)}</span>
               </p>
               <p className="text-sm text-amber-600">
-                ⚠️ 当前画布内容将被替换
+                {label('This will replace the current canvas.', 'سيُستبدل محتوى اللوحة الحالية.')}
               </p>
             </div>
             <DialogFooter>
@@ -488,10 +512,10 @@ export default function TemplateLibraryDialog({
                 variant="outline"
                 onClick={() => setConfirmTemplate(null)}
               >
-                取消
+                {label('Cancel', 'إلغاء')}
               </Button>
               <Button onClick={handleConfirmApply}>
-                确定使用
+                {label('Use template', 'استخدام القالب')}
               </Button>
             </DialogFooter>
           </DialogContent>
