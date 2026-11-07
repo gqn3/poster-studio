@@ -14,6 +14,7 @@ import {
 import { Menu, Download, Copy, Plus, ZoomIn, ZoomOut, Pencil, Trash2, Check, X, Database, ChevronDown, Palette, Hand, MousePointer2, Settings, Heart, QrCode, Layout, Save, Sparkles, Undo2, Redo2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { usePreferences } from '@/app/preferences';
+import { translate } from '@tapndo/i18n';
 import Link from 'next/link';
 
 interface TopbarProps {
@@ -351,7 +352,7 @@ export default function Topbar({
           </button>
         </div>
 
-        <Button variant="outline" className="tapndo-save-design h-10 px-3 gap-2" onClick={onSaveDesign} aria-label={locale === 'ar' ? 'حفظ التصميم' : 'Save design'}><Save className="h-4 w-4"/><span>{locale === 'ar' ? 'حفظ' : 'Save'}</span></Button>
+        <Button variant="outline" className="tapndo-save-design h-10 px-3 gap-2" onClick={onSaveDesign} aria-label={locale === 'ar' ? 'حفظ التصميم' : 'Save design'}><Save className="h-4 w-4"/><span>{translate(locale, 'save')}</span></Button>
         {onCopy && (
           <Button className="tapndo-copy h-10 px-4 py-2 gap-2 shadow-sm" onClick={onCopy}>
             <Copy className="h-4 w-4" />

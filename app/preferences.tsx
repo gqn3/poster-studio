@@ -1,5 +1,6 @@
 'use client';
 import { createContext, useContext, useEffect, useState } from 'react';
+import { direction, resolveLocale } from '@tapndo/i18n';
 
 type Locale = 'en' | 'ar';
 type Preferences = {
@@ -29,7 +30,7 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     const savedLocale = safeRead('tapndo-locale');
     const savedTheme = safeRead('tapndo-theme');
-    const initialLocale = savedLocale === 'ar' ? 'ar' : 'en';
+    const initialLocale = resolveLocale(savedLocale) === 'ar' ? 'ar' : 'en';
     const initialDark = savedTheme === 'dark';
     setLocale(initialLocale);
     setDark(initialDark);
@@ -37,7 +38,7 @@ export function PreferencesProvider({ children }: { children: React.ReactNode })
   }, []);
   useEffect(() => {
     document.documentElement.lang = locale;
-    document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.dir = direction(locale);
   }, [locale]);
   useEffect(() => { applyTheme(dark); }, [dark]);
   const chooseLocale = (value: Locale) => {
