@@ -658,7 +658,7 @@ export default function Home() {
             console.error('❌ 自动保存失败:', error);
             // 如果 localStorage 满了，清理旧版本
             if (error instanceof Error && error.name === 'QuotaExceededError') {
-              setToast({ show: true, message: 'Browser storage is full. Your latest changes could not be saved; free space before closing.', type: 'error' });
+              setToast({ show: true, message: t('Browser storage is full. Your latest changes could not be saved; free space before closing.', 'مساحة تخزين المتصفح ممتلئة. تعذر حفظ آخر تعديلاتك؛ أفرغ مساحة قبل إغلاق الصفحة.'), type: 'error' });
             }
           }
         }
@@ -1462,7 +1462,7 @@ export default function Home() {
         versionRef.current?.update(activeId, manager.toJSON(), undefined, newCanvasSize);
       } catch (error) {
         console.error('Could not save applied template:', error);
-        setToast({ show: true, message: 'Unable to save this canvas. Free browser storage and try again.', type: 'error' });
+        setToast({ show: true, message: t('Unable to save this canvas. Free browser storage and try again.', 'تعذر حفظ هذه اللوحة. أفرغ مساحة في المتصفح وحاول مجددًا.'), type: 'error' });
         return;
       }
 
