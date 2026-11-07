@@ -1980,7 +1980,7 @@ export default function Home() {
             />
             {/* 菜单 */}
             <div
-              className="fixed z-50 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[160px]"
+              className="tapndo-context-menu fixed z-50 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[160px]"
               style={{ left: contextMenu.x, top: contextMenu.y }}
             >
               {/* 🔒 如果对象已锁定，只显示解锁选项 */}

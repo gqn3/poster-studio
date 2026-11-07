@@ -178,3 +178,9 @@ body {
 .dark [role="tab"] { color: #d4e5e3; }
 .dark [role="tab"][data-state="active"] { color: #ffffff; }
 .dark label, .dark .text-muted-foreground { color: #c3d5d3; }
+
+/* The canvas menu is portalled over the workspace: keep its text readable in both themes. */
+.tapndo-context-menu { color: #172e2b; }
+.tapndo-context-menu button { color: #172e2b; text-align: start; }
+.tapndo-context-menu button:hover { background: #e8f2ee; }
+.tapndo-context-menu .text-gray-400, .tapndo-context-menu .text-gray-500 { color: #526c66; }
