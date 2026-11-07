@@ -4,6 +4,11 @@ for (const theme of ['light', 'dark']) {
     await page.addInitScript((t) => { localStorage.setItem('tapndo-theme', t); localStorage.setItem('tapndo-locale', 'ar'); }, theme);
     await page.goto('/editor');
     await page.getByRole('button', { name: 'نص', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => {
+      const saved = JSON.parse(localStorage.getItem('xhs_cover_versions') || '{}');
+      const data = saved.versions?.[0]?.data;
+      return data ? JSON.parse(data).objects?.length || 0 : 0;
+    })).toBeGreaterThan(0);
     const canvas = page.locator('canvas.upper-canvas');
     const box = await canvas.boundingBox();
     if (!box) throw new Error('Canvas missing');

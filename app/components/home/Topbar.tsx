@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Menu, Download, Copy, Plus, ZoomIn, ZoomOut, Pencil, Trash2, Check, X, Database, ChevronDown, Palette, Hand, MousePointer2, Settings, Heart, QrCode, Layout, Save, Github, Sparkles, Undo2, Redo2 } from 'lucide-react';
+import { Menu, Download, Copy, Plus, ZoomIn, ZoomOut, Pencil, Trash2, Check, X, Database, ChevronDown, Palette, Hand, MousePointer2, Settings, Heart, QrCode, Layout, Save, Sparkles, Undo2, Redo2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { usePreferences } from '@/app/preferences';
 import Link from 'next/link';
@@ -364,7 +364,7 @@ export default function Topbar({
         </Button>
         {/* Public sharing remains disabled until its API has authenticated ownership checks. */}
         {/* 更多菜单 */}
-        <DropdownMenu>
+        {(onOpenSettings || onOpenDonation || onOpenWeChat) && <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-10 w-10" aria-label={locale === "ar" ? "المزيد من الخيارات" : "More options"}>
               <Menu className="h-5 w-5" />
@@ -389,13 +389,8 @@ export default function Topbar({
                 {locale === 'ar' ? 'القناة' : 'Channel'}
               </DropdownMenuItem>
             )}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => window.open('https://github.com/joeseesun/poster-studio', '_blank')}>
-              <Github className="h-4 w-4 mr-2" />
-              GitHub
-            </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu>}
       </div>
     </header>
   );

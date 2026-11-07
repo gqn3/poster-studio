@@ -10,15 +10,12 @@ test('canvas actions and zoom controls are accessible in Arabic and English', as
   await expect(page.getByRole('button', { name: 'تصغير' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'تكبير', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'إعادة ضبط التكبير' })).toBeVisible();
-  await page.getByRole('button', { name: 'المزيد من الخيارات' }).click();
-  await expect(page.getByRole('menuitem', { name: 'GitHub' })).toBeVisible();
-
-  await page.getByRole('menuitem', { name: 'GitHub' }).focus();
-  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: 'المزيد من الخيارات' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Switch to English' }).click();
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
   await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
   await expect(page.getByRole('button', { name: 'Zoom out' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Zoom in' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Reset zoom' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'More options' })).toHaveCount(0);
 });
