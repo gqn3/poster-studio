@@ -276,7 +276,6 @@ export default function Home() {
 
     // 键盘事件：删除选中对象、图层调整、工具快捷键
     const handleKeyDown = (e: KeyboardEvent) => {
-      console.log('⌨️ keydown 事件:', e.key, 'metaKey:', e.metaKey, 'ctrlKey:', e.ctrlKey);
 
       // 检查是否有输入框获得焦点
       const target = e.target as HTMLElement;
