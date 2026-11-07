@@ -3,9 +3,9 @@ import "./globals.css";
 import { PreferencesProvider } from "./preferences";
 
 export const metadata: Metadata = {
-  // The editor remains a review build until the release gates are explicitly met.
-  robots: { index: false, follow: false },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  robots: { index: process.env.TAPNDO_INDEXABLE === 'true', follow: process.env.TAPNDO_INDEXABLE === 'true' },
+  alternates: { canonical: '/' },
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://tapndo-poster-cxi5we.cranl.net'),
   title: "TapNDo Studio",
   description: "Design posters and social graphics in your browser.",
   icons: {
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "TapNDo Studio",
     description: "Design posters and social graphics in your browser.",
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://tapndo-poster-cxi5we.cranl.net',
     siteName: "TapNDo Studio",
     type: 'website',
   },
