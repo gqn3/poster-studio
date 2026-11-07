@@ -30,9 +30,9 @@ test('embedded image actually renders after reload and PNG export is nonempty', 
   });
   await page.goto('/');
   await page.getByRole('button', { name: 'Image', exact: true }).click();
-  await page.getByRole('tab', { name: '本地上传' }).click();
+  await page.getByRole('tab', { name: 'Upload' }).click();
   const chooser = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: /上传本地图片/ }).click();
+  await page.getByRole('button', { name: /Upload image/ }).click();
   await (await chooser).setFiles({ name: 'red.png', mimeType: 'image/png', buffer: redPng });
 
   // Verify actual pixels rather than only the serialized data URL.

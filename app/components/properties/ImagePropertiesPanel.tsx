@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePreferences } from '@/app/preferences';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -39,6 +40,7 @@ export default function ImagePropertiesPanel({
   onRemoveBackground,
   onAIImageTransform,
 }: ImagePropertiesPanelProps) {
+  const { locale } = usePreferences();
   const [activeTab, setActiveTab] = useState('basic');
   const [isRemovingBg, setIsRemovingBg] = useState(false);
   const [aiPrompt, setAiPrompt] = useState('');
@@ -239,16 +241,16 @@ export default function ImagePropertiesPanel({
     >
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-0">
         <TabsList className="w-full grid grid-cols-3">
-          <TabsTrigger value="basic">基础</TabsTrigger>
-          <TabsTrigger value="effects">效果</TabsTrigger>
-          <TabsTrigger value="filters">滤镜</TabsTrigger>
+          <TabsTrigger value="basic">{locale === 'ar' ? 'أساسي' : 'Basic'}</TabsTrigger>
+          <TabsTrigger value="effects">{locale === 'ar' ? 'تأثيرات' : 'Effects'}</TabsTrigger>
+          <TabsTrigger value="filters">{locale === 'ar' ? 'مرشحات' : 'Filters'}</TabsTrigger>
         </TabsList>
 
         {/* 基础属性 Tab */}
         <TabsContent value="basic" className="px-8 py-6 space-y-6">
           {/* 不透明度 */}
           <div>
-            <h3 className="text-sm font-semibold mb-4">不透明度</h3>
+            <h3 className="text-sm font-semibold mb-4">{locale === 'ar' ? 'الشفافية' : 'Opacity'}</h3>
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">{opacity}%</span>
@@ -268,7 +270,7 @@ export default function ImagePropertiesPanel({
 
           {/* 圆角 */}
           <div>
-            <h3 className="text-sm font-semibold mb-4">圆角</h3>
+            <h3 className="text-sm font-semibold mb-4">{locale === 'ar' ? 'استدارة الزوايا' : 'Corner radius'}</h3>
 
             {/* 预设按钮 */}
             <div className="grid grid-cols-5 gap-2 mb-4">
@@ -282,7 +284,7 @@ export default function ImagePropertiesPanel({
                 }`}
                 onClick={() => handleBorderRadiusPreset(0)}
               >
-                无
+                {locale === 'ar' ? 'بلا' : 'None'}
               </Button>
               <Button
                 variant="outline"
@@ -294,7 +296,7 @@ export default function ImagePropertiesPanel({
                 }`}
                 onClick={() => handleBorderRadiusPreset(5)}
               >
-                小
+                {locale === 'ar' ? 'صغير' : 'Small'}
               </Button>
               <Button
                 variant="outline"
@@ -306,7 +308,7 @@ export default function ImagePropertiesPanel({
                 }`}
                 onClick={() => handleBorderRadiusPreset(15)}
               >
-                中
+                {locale === 'ar' ? 'متوسط' : 'Medium'}
               </Button>
               <Button
                 variant="outline"
@@ -318,7 +320,7 @@ export default function ImagePropertiesPanel({
                 }`}
                 onClick={() => handleBorderRadiusPreset(25)}
               >
-                大
+                {locale === 'ar' ? 'كبير' : 'Large'}
               </Button>
               <Button
                 variant="outline"
@@ -330,14 +332,14 @@ export default function ImagePropertiesPanel({
                 }`}
                 onClick={() => handleBorderRadiusPreset(50)}
               >
-                最大
+                {locale === 'ar' ? 'الأقصى' : 'Maximum'}
               </Button>
             </div>
 
             {/* 自定义滑块 */}
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <label className="text-xs font-medium text-muted-foreground">自定义</label>
+                <label className="text-xs font-medium text-muted-foreground">{locale === 'ar' ? 'مخصص' : 'Custom'}</label>
                 <span className="text-xs text-muted-foreground">{borderRadiusPercent}%</span>
               </div>
               <Slider
@@ -352,7 +354,7 @@ export default function ImagePropertiesPanel({
 
           {/* 翻转 */}
           <div>
-            <h3 className="text-sm font-semibold mb-4">翻转</h3>
+            <h3 className="text-sm font-semibold mb-4">{locale === 'ar' ? 'قلب' : 'Flip'}</h3>
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -361,7 +363,7 @@ export default function ImagePropertiesPanel({
                 className="flex-1"
               >
                 <FlipHorizontal className="h-4 w-4 mr-2" />
-                水平
+                {locale === 'ar' ? 'أفقي' : 'Horizontal'}
               </Button>
               <Button
                 variant="outline"
@@ -370,300 +372,18 @@ export default function ImagePropertiesPanel({
                 className="flex-1"
               >
                 <FlipVertical className="h-4 w-4 mr-2" />
-                垂直
+                {locale === 'ar' ? 'عمودي' : 'Vertical'}
               </Button>
             </div>
           </div>
 
-          {/* 去背景 */}
-          <div>
-            <h3 className="text-sm font-semibold mb-4">去背景</h3>
-
-            {/* 两个按钮并排 */}
-            <div className="grid grid-cols-2 gap-2 mb-2">
-              {/* Remove.bg API 去背景 */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={async () => {
-                  // 获取图片 URL
-                  const imageUrl = selectedObject?._element?.src || selectedObject?.getSrc?.();
-                  if (!imageUrl) {
-                    alert('无法获取图片 URL');
-                    return;
-                  }
-
-                  setIsRemovingBg(true);
-                  try {
-                    if (onRemoveBackground) {
-                      await onRemoveBackground(imageUrl);
-                    }
-                  } catch (error) {
-                    console.error('去背景失败:', error);
-                    alert(error instanceof Error ? error.message : '去背景失败');
-                  } finally {
-                    setIsRemovingBg(false);
-                  }
-                }}
-                disabled={isRemovingBg || isTransforming}
-                className="w-full"
-              >
-                {isRemovingBg ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span className="text-xs">处理中...</span>
-                  </>
-                ) : (
-                  <span className="text-xs">去背景（API版）</span>
-                )}
-              </Button>
-
-              <Button variant="outline" size="sm" disabled className="w-full" title="Background removal is paused until its dependency and upload path are safe">
-                <span className="text-xs">Background removal paused / إزالة الخلفية متوقفة مؤقتًا</span>
-              </Button>
-            </div>
-          </div>
-
-          {/* AI 改图 */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold">AI改图</h3>
-              <button
-                type="button"
-                onClick={() => setShowQuickPrompts(!showQuickPrompts)}
-                className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                快捷提示词
-                {showQuickPrompts ? (
-                  <ChevronUp className="h-3.5 w-3.5" />
-                ) : (
-                  <ChevronDown className="h-3.5 w-3.5" />
-                )}
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {/* Textarea 输入框 */}
-              <textarea
-                value={aiPrompt}
-                onChange={(e) => setAiPrompt(e.target.value)}
-                onKeyDown={async (e) => {
-                  if (e.key === 'Enter' && !e.shiftKey && aiPrompt.trim() && !isTransforming) {
-                    e.preventDefault();
-                    // 获取图片 URL
-                    const imageUrl = selectedObject?._element?.src || selectedObject?.getSrc?.();
-                    if (!imageUrl) {
-                      alert('无法获取图片 URL');
-                      return;
-                    }
-
-                    setIsTransforming(true);
-                    try {
-                      if (onAIImageTransform) {
-                        await onAIImageTransform(imageUrl, aiPrompt.trim());
-                        setAiPrompt(''); // 清空输入框
-                      }
-                    } catch (error) {
-                      console.error('AI 改图失败:', error);
-                      alert(error instanceof Error ? error.message : 'AI 改图失败');
-                    } finally {
-                      setIsTransforming(false);
-                    }
-                  }
-                }}
-                placeholder="输入提示词，回车生成..."
-                disabled={isTransforming || isRemovingBg}
-                rows={2}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed resize-none"
-              />
-
-              {/* 快捷提示词列表（折叠/展开） */}
-              {showQuickPrompts && (
-                <div className="space-y-2">
-                  {/* 新增按钮 */}
-                  {!isAdding && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsAdding(true);
-                        setNewPromptText('');
-                      }}
-                      disabled={isTransforming}
-                      className="flex items-center gap-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-900 border border-gray-300 rounded hover:border-gray-900 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                      新增
-                    </button>
-                  )}
-
-                  {/* 提示词列表容器 */}
-                  <div className="max-h-[200px] overflow-y-auto space-y-2">
-                    {/* 新增输入框 */}
-                    {isAdding && (
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={newPromptText}
-                          onChange={(e) => setNewPromptText(e.target.value)}
-                          placeholder="输入新的提示词,按Enter保存,Esc取消"
-                          className="w-full px-3 py-2 pr-20 text-xs border border-gray-300 rounded bg-gray-50 focus:outline-none focus:border-gray-900 placeholder:text-gray-400"
-                          autoFocus
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              e.preventDefault();
-                              handleAddPrompt();
-                            }
-                            if (e.key === 'Escape') {
-                              setIsAdding(false);
-                              setNewPromptText('');
-                            }
-                          }}
-                        />
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
-                          <button
-                            type="button"
-                            onClick={handleAddPrompt}
-                            className="px-2 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800"
-                          >
-                            保存
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setIsAdding(false);
-                              setNewPromptText('');
-                            }}
-                            className="p-1 text-gray-500 hover:text-gray-700"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 提示词列表 */}
-                    {quickPrompts.map((promptItem) => (
-                      <div key={promptItem.id} className="group relative">
-                        {editingId === promptItem.id ? (
-                          // 编辑模式
-                          <div className="relative">
-                            <input
-                              type="text"
-                              value={editingText}
-                              onChange={(e) => setEditingText(e.target.value)}
-                              placeholder="按Enter保存,Esc取消"
-                              className="w-full px-3 py-2 pr-20 text-xs border border-gray-300 rounded bg-gray-50 focus:outline-none focus:border-gray-900 placeholder:text-gray-400"
-                              autoFocus
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  e.preventDefault();
-                                  handleUpdatePrompt(promptItem.id);
-                                }
-                                if (e.key === 'Escape') cancelEdit();
-                              }}
-                            />
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
-                              <button
-                                type="button"
-                                onClick={() => handleUpdatePrompt(promptItem.id)}
-                                className="px-2 py-1 text-xs bg-gray-900 text-white rounded hover:bg-gray-800"
-                              >
-                                保存
-                              </button>
-                              <button
-                                type="button"
-                                onClick={cancelEdit}
-                                className="p-1 text-gray-500 hover:text-gray-700"
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          // 显示模式
-                          <div className="relative">
-                            <button
-                              type="button"
-                              onClick={async () => {
-                                const imageUrl = selectedObject?._element?.src || selectedObject?.getSrc?.();
-                                if (!imageUrl) {
-                                  alert('无法获取图片 URL');
-                                  return;
-                                }
-                                setIsTransforming(true);
-                                try {
-                                  if (onAIImageTransform) {
-                                    await onAIImageTransform(imageUrl, promptItem.text);
-                                  }
-                                } catch (error) {
-                                  console.error('AI 改图失败:', error);
-                                  alert(error instanceof Error ? error.message : 'AI 改图失败');
-                                } finally {
-                                  setIsTransforming(false);
-                                }
-                              }}
-                              disabled={isTransforming}
-                              className="w-full text-left px-3 py-2 pr-20 text-xs border border-gray-200 rounded hover:border-gray-900 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed truncate"
-                            >
-                              {promptItem.text}
-                            </button>
-
-                            {/* Hover时显示的编辑/删除按钮 */}
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 hidden group-hover:flex gap-1 bg-white">
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  startEdit(promptItem);
-                                }}
-                                disabled={isTransforming}
-                                className="p-1.5 border border-gray-300 rounded hover:bg-gray-100 disabled:opacity-50"
-                                title="编辑"
-                              >
-                                <Pencil className="h-3.5 w-3.5 text-gray-600" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeletePrompt(promptItem.id);
-                                }}
-                                disabled={isTransforming}
-                                className="p-1.5 border border-gray-300 rounded hover:bg-red-50 hover:border-red-300 disabled:opacity-50"
-                                title="删除"
-                              >
-                                <Trash2 className="h-3.5 w-3.5 text-red-600" />
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {isTransforming && (
-                <div className="flex items-center justify-center text-xs text-gray-500">
-                  <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  AI 正在生成图片...
-                </div>
-              )}
-            </div>
-          </div>
         </TabsContent>
 
         {/* 效果 Tab */}
         <TabsContent value="effects" className="px-8 py-6 space-y-6">
           {/* 阴影 */}
           <div>
-            <h3 className="text-sm font-semibold mb-4">阴影</h3>
+            <h3 className="text-sm font-semibold mb-4">{locale === 'ar' ? 'ظل' : 'Shadow'}</h3>
 
             {/* 样式选择 */}
             <div className="grid grid-cols-4 gap-2 mb-4">
@@ -677,7 +397,7 @@ export default function ImagePropertiesPanel({
                 }`}
                 onClick={() => handleShadowStyleChange('none')}
               >
-                无
+                {locale === 'ar' ? 'بلا' : 'None'}
               </Button>
               <Button
                 variant="outline"
@@ -689,7 +409,7 @@ export default function ImagePropertiesPanel({
                 }`}
                 onClick={() => handleShadowStyleChange('soft')}
               >
-                柔和
+                {locale === 'ar' ? 'ناعم' : 'Soft'}
               </Button>
               <Button
                 variant="outline"
@@ -701,7 +421,7 @@ export default function ImagePropertiesPanel({
                 }`}
                 onClick={() => handleShadowStyleChange('normal')}
               >
-                标准
+                {locale === 'ar' ? 'قياسي' : 'Standard'}
               </Button>
               <Button
                 variant="outline"
@@ -713,7 +433,7 @@ export default function ImagePropertiesPanel({
                 }`}
                 onClick={() => handleShadowStyleChange('strong')}
               >
-                强烈
+                {locale === 'ar' ? 'قوي' : 'Strong'}
               </Button>
             </div>
 
@@ -722,7 +442,7 @@ export default function ImagePropertiesPanel({
               <div className="space-y-4">
                 {/* 阴影颜色 */}
                 <div className="flex items-center gap-3">
-                  <label className="text-xs font-medium text-muted-foreground w-16">颜色</label>
+                  <label className="text-xs font-medium text-muted-foreground w-16">{locale === 'ar' ? 'اللون' : 'Color'}</label>
                   <input
                     type="color"
                     value={shadowColor}
@@ -734,7 +454,7 @@ export default function ImagePropertiesPanel({
                 {/* 模糊度 */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <label className="text-xs font-medium text-muted-foreground">模糊</label>
+                    <label className="text-xs font-medium text-muted-foreground">{locale === 'ar' ? 'تمويه' : 'Blur'}</label>
                     <span className="text-xs text-muted-foreground">{shadowBlur}px</span>
                   </div>
                   <Slider
@@ -749,7 +469,7 @@ export default function ImagePropertiesPanel({
                 {/* 偏移 X */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <label className="text-xs font-medium text-muted-foreground">偏移 X</label>
+                    <label className="text-xs font-medium text-muted-foreground">{locale === 'ar' ? 'الإزاحة الأفقية' : 'Offset X'}</label>
                     <span className="text-xs text-muted-foreground">{shadowOffsetX}px</span>
                   </div>
                   <Slider
@@ -764,7 +484,7 @@ export default function ImagePropertiesPanel({
                 {/* 偏移 Y */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <label className="text-xs font-medium text-muted-foreground">偏移 Y</label>
+                    <label className="text-xs font-medium text-muted-foreground">{locale === 'ar' ? 'الإزاحة الرأسية' : 'Offset Y'}</label>
                     <span className="text-xs text-muted-foreground">{shadowOffsetY}px</span>
                   </div>
                   <Slider
@@ -781,7 +501,7 @@ export default function ImagePropertiesPanel({
 
           {/* 边框 */}
           <div>
-            <h3 className="text-sm font-semibold mb-4">边框</h3>
+            <h3 className="text-sm font-semibold mb-4">{locale === 'ar' ? 'الحدود' : 'Border'}</h3>
 
             {/* 样式选择 */}
             <div className="grid grid-cols-3 gap-2 mb-4">
@@ -795,7 +515,7 @@ export default function ImagePropertiesPanel({
                 }`}
                 onClick={() => handleStrokeStyleChange('none')}
               >
-                无
+                {locale === 'ar' ? 'بلا' : 'None'}
               </Button>
               <Button
                 variant="outline"
@@ -807,7 +527,7 @@ export default function ImagePropertiesPanel({
                 }`}
                 onClick={() => handleStrokeStyleChange('solid')}
               >
-                实线
+                {locale === 'ar' ? 'متصل' : 'Solid'}
               </Button>
               <Button
                 variant="outline"
@@ -819,7 +539,7 @@ export default function ImagePropertiesPanel({
                 }`}
                 onClick={() => handleStrokeStyleChange('dashed')}
               >
-                虚线
+                {locale === 'ar' ? 'متقطع' : 'Dashed'}
               </Button>
             </div>
 
@@ -828,7 +548,7 @@ export default function ImagePropertiesPanel({
               <div className="space-y-4">
                 {/* 边框颜色 */}
                 <div className="flex items-center gap-3">
-                  <label className="text-xs font-medium text-muted-foreground w-16">颜色</label>
+                  <label className="text-xs font-medium text-muted-foreground w-16">{locale === 'ar' ? 'اللون' : 'Color'}</label>
                   <input
                     type="color"
                     value={strokeColor}
@@ -840,7 +560,7 @@ export default function ImagePropertiesPanel({
                 {/* 边框宽度 */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <label className="text-xs font-medium text-muted-foreground">宽度</label>
+                    <label className="text-xs font-medium text-muted-foreground">{locale === 'ar' ? 'العرض' : 'Width'}</label>
                     <span className="text-xs text-muted-foreground">{strokeWidth}px</span>
                   </div>
                   <Slider
@@ -860,49 +580,49 @@ export default function ImagePropertiesPanel({
         <TabsContent value="filters" className="px-8 py-6 space-y-6">
           {/* 快速滤镜 */}
           <div>
-            <h3 className="text-sm font-semibold mb-4">快速滤镜</h3>
+            <h3 className="text-sm font-semibold mb-4">{locale === 'ar' ? 'مرشحات سريعة' : 'Quick filters'}</h3>
             <div className="grid grid-cols-3 gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onFilterChange('grayscale')}
               >
-                灰度
+                {locale === 'ar' ? 'تدرج رمادي' : 'Grayscale'}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onFilterChange('sepia')}
               >
-                棕褐
+                {locale === 'ar' ? 'بني داكن' : 'Sepia'}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onFilterChange('invert')}
               >
-                反色
+                {locale === 'ar' ? 'عكس الألوان' : 'Invert'}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onFilterChange('blur')}
               >
-                模糊
+                {locale === 'ar' ? 'تمويه' : 'Blur'}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onFilterChange('sharpen')}
               >
-                锐化
+                {locale === 'ar' ? 'زيادة الحدة' : 'Sharpen'}
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onFilterChange('emboss')}
               >
-                浮雕
+                {locale === 'ar' ? 'نقش' : 'Emboss'}
               </Button>
             </div>
             <Button
@@ -911,18 +631,18 @@ export default function ImagePropertiesPanel({
               onClick={() => onFilterChange('reset')}
               className="w-full mt-2"
             >
-              重置滤镜
+              {locale === 'ar' ? 'إعادة ضبط المرشحات' : 'Reset filters'}
             </Button>
           </div>
 
           {/* 色彩调整 */}
           <div>
-            <h3 className="text-sm font-semibold mb-4">色彩调整</h3>
+            <h3 className="text-sm font-semibold mb-4">{locale === 'ar' ? 'تعديل الألوان' : 'Color adjustments'}</h3>
 
             {/* 亮度 */}
             <div className="space-y-2 mb-4">
               <div className="flex justify-between items-center">
-                <label className="text-xs font-medium text-muted-foreground">亮度</label>
+                <label className="text-xs font-medium text-muted-foreground">{locale === 'ar' ? 'السطوع' : 'Brightness'}</label>
                 <span className="text-xs text-muted-foreground">{brightness > 0 ? '+' : ''}{Math.round(brightness * 100)}</span>
               </div>
               <Slider
@@ -941,7 +661,7 @@ export default function ImagePropertiesPanel({
             {/* 对比度 */}
             <div className="space-y-2 mb-4">
               <div className="flex justify-between items-center">
-                <label className="text-xs font-medium text-muted-foreground">对比度</label>
+                <label className="text-xs font-medium text-muted-foreground">{locale === 'ar' ? 'التباين' : 'Contrast'}</label>
                 <span className="text-xs text-muted-foreground">{contrast > 0 ? '+' : ''}{Math.round(contrast * 100)}</span>
               </div>
               <Slider
@@ -960,7 +680,7 @@ export default function ImagePropertiesPanel({
             {/* 饱和度 */}
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <label className="text-xs font-medium text-muted-foreground">饱和度</label>
+                <label className="text-xs font-medium text-muted-foreground">{locale === 'ar' ? 'التشبع' : 'Saturation'}</label>
                 <span className="text-xs text-muted-foreground">{saturation > 0 ? '+' : ''}{Math.round(saturation * 100)}</span>
               </div>
               <Slider

@@ -16,7 +16,7 @@ test('text survives reload and PNG download contains image bytes', async ({ page
     const saved = JSON.parse(localStorage.getItem('xhs_cover_versions') || '{}');
     return JSON.parse(saved.versions[0].data).objects[0].text;
   });
-  expect(stored).toBe('双击编辑');
+  expect(stored).toBe('Double-click to edit');
 
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download' }).click();

@@ -5,9 +5,9 @@ test('local image stays on device and survives reload', async ({ page }) => {
   page.on('request', request => { if (request.method() === 'POST' && request.url().includes('/api/qiniu-upload')) uploads.push(request.url()); });
   await page.goto('/');
   await page.getByRole('button', { name: 'Image', exact: true }).click();
-  await page.getByRole('tab', { name: '本地上传' }).click();
+  await page.getByRole('tab', { name: 'Upload' }).click();
   const chooser = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: /上传本地图片/ }).click();
+  await page.getByRole('button', { name: /Upload image/ }).click();
   await (await chooser).setFiles({ name: 'sample.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/a9sAAAAASUVORK5CYII=', 'base64') });
   await expect.poll(() => page.evaluate(() => {
     const saved = localStorage.getItem('xhs_cover_versions');

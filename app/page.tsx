@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { usePreferences } from './preferences';
 import { CanvasManager } from '@/lib/canvas-manager';
 import { VersionManager } from '@/lib/version-manager';
 import { AIImageGenerator } from '@/lib/ai-image-generator';
@@ -53,6 +54,7 @@ function normalizeCanvasSize(size?: CanvasSize | null): CanvasSize {
 }
 
 export default function Home() {
+  const { locale } = usePreferences();
   const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const managerRef = useRef<CanvasManager | null>(null);
@@ -455,29 +457,6 @@ export default function Home() {
         return;
       }
 
-      // Tab键 - 打开图片转换对话框（需要选中对象且不在编辑状态）
-      if (e.key === 'Tab' && managerRef.current) {
-        const activeObject = managerRef.current.canvas.getActiveObject();
-        const activeObjects = managerRef.current.canvas.getActiveObjects();
-
-        // 检查是否处于文本编辑状态
-        const isEditing = activeObject && (activeObject as any).isEditing;
-
-        if (activeObjects.length > 0 && !isEditing) {
-          e.preventDefault();
-
-          // 检查是否配置了 API Key
-          if (!hasApiKeyConfigured()) {
-            setShowSettingsDialog(true);
-            setToast({ show: true, message: '请先配置 API Key', type: 'info' });
-            return;
-          }
-
-          setShowImageToImageDialog(true);
-          return;
-        }
-      }
-
       // 复制快捷键 Cmd/Ctrl + C (需要选中对象)
       if (cmdOrCtrl && e.key === 'c' && managerRef.current) {
         const activeObject = managerRef.current.canvas.getActiveObject();
@@ -688,9 +667,9 @@ export default function Home() {
   const handleToolChange = (tool: string) => {
     setActiveTool(tool);
     if (tool === 'text' && managerRef.current) {
-      managerRef.current.addText(); // 单行文本
+      managerRef.current.addText(locale === 'ar' ? 'انقر مرتين للتحرير' : 'Double-click to edit'); // Single-line text
     } else if (tool === 'textbox' && managerRef.current) {
-      managerRef.current.addTextbox(); // 多行文本
+      managerRef.current.addTextbox(locale === 'ar' ? 'انقر مرتين للتحرير' : 'Double-click to edit'); // Text box
     } else if (tool === 'pencil' && managerRef.current) {
       // 🆕 启用画笔模式（持久化，不会自动退出）
       managerRef.current.enableDrawingMode();
@@ -1746,9 +1725,6 @@ export default function Home() {
         onCopy={handleCopy}
         onShare={handleShareClick}
         isSharing={isSharing}
-        onOpenSettings={() => setShowSettingsDialog(true)}
-        onOpenDonation={() => setShowDonationDialog(true)}
-        onOpenWeChat={() => setShowWeChatDialog(true)}
         onOpenTemplateLibrary={() => setShowTemplateLibrary(true)}
         onSaveAsTemplate={() => setShowSaveTemplateDialog(true)}
       />
@@ -1999,31 +1975,12 @@ export default function Home() {
                     setContextMenu(null);
                   }}
                 >
-                  <span>🔒 解锁对象</span>
+                  <span>{locale === 'ar' ? '🔒 إلغاء قفل العنصر' : '🔒 Unlock object'}</span>
                   <span className="text-xs text-gray-400">⌘⇧L</span>
                 </button>
               ) : (
                 // 未锁定对象显示完整菜单
                 <>
-            {/* AI图片转换 */}
-            <button
-              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between"
-              onClick={() => {
-                // 检查是否配置了 API Key
-                if (!hasApiKeyConfigured()) {
-                  setShowSettingsDialog(true);
-                  setToast({ show: true, message: '请先配置 API Key', type: 'info' });
-                  setContextMenu(null);
-                  return;
-                }
-                setShowImageToImageDialog(true);
-                setContextMenu(null);
-              }}
-            >
-              <span>AI图片转换</span>
-              <span className="text-xs text-gray-400">Tab</span>
-            </button>
-
             {/* 下载为图片 */}
             <button
               className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between"
@@ -2037,7 +1994,7 @@ export default function Home() {
                 setContextMenu(null);
               }}
             >
-              <span>下载为图片</span>
+              <span>{locale === 'ar' ? 'تنزيل الصورة' : 'Download image'}</span>
               <span className="text-xs text-gray-400">⌘⇧D</span>
             </button>
 
@@ -2051,16 +2008,7 @@ export default function Home() {
                     setContextMenu(null);
                   }}
                 >
-                  <span>复制到剪贴板</span>
-                </button>
-                <button
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
-                  onClick={() => {
-                    setShowShareMaterialDialog(true);
-                    setContextMenu(null);
-                  }}
-                >
-                  <span>分享素材</span>
+                  <span>{locale === 'ar' ? 'نسخ إلى الحافظة' : 'Copy to clipboard'}</span>
                 </button>
               </>
             )}
@@ -2080,7 +2028,7 @@ export default function Home() {
                 setContextMenu(null);
               }}
             >
-              <span>{(selectedObject as any).locked ? '🔒 解锁对象' : '🔓 锁定对象'}</span>
+              <span>{(selectedObject as any).locked ? (locale === 'ar' ? 'إلغاء القفل' : 'Unlock') : (locale === 'ar' ? 'قفل' : 'Lock')}</span>
               <span className="text-xs text-gray-400">⌘⇧L</span>
             </button>
 
@@ -2089,7 +2037,7 @@ export default function Home() {
             {/* 形状专属选项 */}
             {(selectedObject as any).isShape && (
               <>
-                <div className="px-4 py-1 text-xs text-gray-500 font-medium">形状设置</div>
+                <div className="px-4 py-1 text-xs text-gray-500 font-medium">{locale === 'ar' ? 'إعدادات الشكل' : 'Shape settings'}</div>
                 <button
                   className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100"
                   onClick={() => setShowShapeFillPicker(!showShapeFillPicker)}
@@ -2108,7 +2056,7 @@ export default function Home() {
 
             {/* 图层操作 */}
             {(selectedObject as any).isShape && (
-              <div className="px-4 py-1 text-xs text-gray-500 font-medium">图层</div>
+              <div className="px-4 py-1 text-xs text-gray-500 font-medium">{locale === 'ar' ? 'الطبقات' : 'Layers'}</div>
             )}
             <button
               className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between"
@@ -2117,7 +2065,7 @@ export default function Home() {
                 setContextMenu(null);
               }}
             >
-              <span>置于顶层</span>
+              <span>{locale === 'ar' ? 'نقل إلى المقدمة' : 'Bring to front'}</span>
               <span className="text-xs text-gray-400">⌘⇧]</span>
             </button>
             <button
@@ -2127,7 +2075,7 @@ export default function Home() {
                 setContextMenu(null);
               }}
             >
-              <span>上移一层</span>
+              <span>{locale === 'ar' ? 'نقل طبقة للأمام' : 'Bring forward'}</span>
               <span className="text-xs text-gray-400">⌘]</span>
             </button>
             <button
@@ -2137,7 +2085,7 @@ export default function Home() {
                 setContextMenu(null);
               }}
             >
-              <span>下移一层</span>
+              <span>{locale === 'ar' ? 'نقل طبقة للخلف' : 'Send backward'}</span>
               <span className="text-xs text-gray-400">⌘[</span>
             </button>
             <button
@@ -2147,7 +2095,7 @@ export default function Home() {
                 setContextMenu(null);
               }}
             >
-              <span>置于底层</span>
+              <span>{locale === 'ar' ? 'نقل إلى الخلف' : 'Send to back'}</span>
               <span className="text-xs text-gray-400">⌘⇧[</span>
             </button>
                 </>

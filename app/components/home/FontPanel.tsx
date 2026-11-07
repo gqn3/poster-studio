@@ -612,7 +612,7 @@ export default function FontPanel({
 
                 {/* 描边宽度 */}
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-2 block">宽度</label>
+                  <label className="text-xs font-medium text-muted-foreground mb-2 block">{locale === 'ar' ? 'العرض' : 'Width'}</label>
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
@@ -656,7 +656,7 @@ export default function FontPanel({
         <TabsContent value="spacing" className="px-8 py-6 space-y-6">
           {/* 字间距 */}
           <div>
-            <label className="text-sm font-semibold mb-3 block">字间距</label>
+            <label className="text-sm font-semibold mb-3 block">{locale === 'ar' ? 'تباعد الأحرف' : 'Letter spacing'}</label>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -696,7 +696,7 @@ export default function FontPanel({
 
           {/* 行间距 */}
           <div>
-            <label className="text-sm font-semibold mb-3 block">行间距</label>
+            <label className="text-sm font-semibold mb-3 block">{locale === 'ar' ? 'تباعد الأسطر' : 'Line spacing'}</label>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -736,7 +736,7 @@ export default function FontPanel({
 
           {/* 对齐方式 */}
           <div>
-            <label className="text-sm font-semibold mb-3 block">对齐方式</label>
+            <label className="text-sm font-semibold mb-3 block">{locale === 'ar' ? 'المحاذاة' : 'Alignment'}</label>
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -783,12 +783,12 @@ export default function FontPanel({
           {/* 纯色背景选择器 */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-semibold">纯色背景</label>
+              <label className="text-sm font-semibold">{locale === 'ar' ? 'خلفية بلون واحد' : 'Solid background'}</label>
               <button
                 onClick={() => setShowAllSolidColors(!showAllSolidColors)}
                 className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
               >
-                {showAllSolidColors ? '收起' : '展开'}
+                {showAllSolidColors ? (locale === 'ar' ? 'طي' : 'Show less') : (locale === 'ar' ? 'عرض المزيد' : 'Show more')}
                 <svg
                   className={`w-3 h-3 transition-transform ${showAllSolidColors ? 'rotate-180' : ''}`}
                   fill="none"
@@ -893,12 +893,12 @@ export default function FontPanel({
           {/* 渐变背景 */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-semibold">渐变背景</label>
+              <label className="text-sm font-semibold">{locale === 'ar' ? 'خلفية متدرجة' : 'Gradient background'}</label>
               <button
                 onClick={() => setShowAllGradients(!showAllGradients)}
                 className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
               >
-                {showAllGradients ? '收起' : '展开'}
+                {showAllGradients ? (locale === 'ar' ? 'طي' : 'Show less') : (locale === 'ar' ? 'عرض المزيد' : 'Show more')}
                 <svg
                   className={`w-3 h-3 transition-transform ${showAllGradients ? 'rotate-180' : ''}`}
                   fill="none"

@@ -8,4 +8,3 @@ test('typing into the editor does not log pressed keys', async ({ page }) => {
   await page.keyboard.press('F8');
   expect(logs.filter(message => message.includes('F8'))).toEqual([]);
 });
-

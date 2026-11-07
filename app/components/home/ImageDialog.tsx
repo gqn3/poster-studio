@@ -6,6 +6,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { usePreferences } from '@/app/preferences';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -43,7 +44,8 @@ export default function ImageDialog({
   onLocalUpload,
   onSelectImage,
 }: ImageDialogProps) {
-  const [activeTab, setActiveTab] = useState<'upload' | 'library' | 'search' | 'shared'>('search');
+  const { locale } = usePreferences();
+  const [activeTab, setActiveTab] = useState<'upload' | 'library' | 'search' | 'shared'>('upload');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // 图库相关
@@ -340,24 +342,16 @@ export default function ImageDialog({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-5xl h-[calc(85vh+10px)] flex flex-col p-0">
-        <DialogTitle className="sr-only">插入图片</DialogTitle>
+        <DialogTitle className="sr-only">{locale === 'ar' ? 'إضافة صورة' : 'Add image'}</DialogTitle>
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="flex-1 flex flex-col">
-          <TabsList className="mx-6 mt-6 mb-0 grid grid-cols-4 w-auto border-b rounded-none bg-transparent">
-            <TabsTrigger value="search" className="flex items-center gap-2">
-              <Search className="h-4 w-4" />
-              <span>网络搜图</span>
-            </TabsTrigger>
-            <TabsTrigger value="shared" className="flex items-center gap-2">
-              <Share2 className="h-4 w-4" />
-              <span>共享素材</span>
-            </TabsTrigger>
+          <TabsList className="mx-6 mt-6 mb-0 grid grid-cols-2 w-auto border-b rounded-none bg-transparent">
             <TabsTrigger value="library" className="flex items-center gap-2">
               <ImageIcon className="h-4 w-4" />
-              <span>图库选择</span>
+              <span>{locale === 'ar' ? 'مكتبة الصور' : 'Image library'}</span>
             </TabsTrigger>
             <TabsTrigger value="upload" className="flex items-center gap-2">
               <Upload className="h-4 w-4" />
-              <span>本地上传</span>
+              <span>{locale === 'ar' ? 'رفع صورة' : 'Upload'}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -368,13 +362,12 @@ export default function ImageDialog({
               className="flex flex-col items-center justify-center p-12 rounded-2xl bg-primary/5 hover:bg-primary/10 transition-all group cursor-pointer border-2 border-dashed border-primary/30 hover:border-primary max-w-md w-full"
             >
               <Upload className="h-20 w-20 text-primary mb-6 group-hover:scale-110 transition-transform" />
-              <h3 className="text-xl font-semibold mb-2">上传本地图片</h3>
+              <h3 className="text-xl font-semibold mb-2">{locale === 'ar' ? 'رفع صورة' : 'Upload image'}</h3>
               <p className="text-muted-foreground text-center">
-                点击选择图片上传<br />
-                支持 JPG、PNG、GIF 等格式
+                {locale === 'ar' ? 'اختر صورة من جهازك' : 'Choose an image from your device'}
               </p>
               <p className="text-sm text-muted-foreground mt-4">
-                PNG, JPEG, WebP, GIF · 2 MB maximum · stored in this browser
+                {locale === 'ar' ? 'PNG، JPEG، WebP، GIF · الحد الأقصى 2 ميغابايت · تُحفظ في هذا المتصفح' : 'PNG, JPEG, WebP, GIF · 2 MB maximum · stored in this browser'}
               </p>
             </button>
           </TabsContent>
@@ -506,8 +499,8 @@ export default function ImageDialog({
             {libraryImages.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground p-6">
                 <ImageIcon className="h-16 w-16 mb-4 opacity-20" />
-                <p className="text-lg">图片库为空</p>
-                <p className="text-sm mt-2">上传或粘贴图片后会自动保存到这里</p>
+                <p className="text-lg">{locale === 'ar' ? 'مكتبة الصور فارغة' : 'Your image library is empty'}</p>
+                <p className="text-sm mt-2">{locale === 'ar' ? 'تظهر الصور المرفوعة أو الملصقة هنا' : 'Uploaded and pasted images appear here'}</p>
               </div>
             ) : (
               <>
@@ -529,7 +522,7 @@ export default function ImageDialog({
                         <button
                           onClick={(e) => handleDeleteLibraryImage(item.url, e)}
                           className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          title="删除"
+                          title={locale === 'ar' ? 'حذف' : 'Delete'}
                         >
                           <X className="h-4 w-4" />
                         </button>

@@ -9,8 +9,8 @@ test('font endpoints reject path traversal before reading arbitrary local files'
   assert.equal(response.status,403,endpoint);
  }
 });
-test('existing font stylesheet remains available', async () => {
+test('removed font package is unavailable', async () => {
  const url=new URL('/api/fonts',origin);
  url.searchParams.set('path','@chinese-fonts/lxgwwenkai/dist/LXGWWenKai-Regular/result.css');
- assert.equal((await fetch(url)).status,200);
+ assert.equal((await fetch(url)).status,404);
 });
