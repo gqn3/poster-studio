@@ -16,3 +16,31 @@
 .art-card-front { transform:translate(57px,8px) rotate(7deg) rotateY(-12deg) rotateX(4deg);box-shadow:12px 30px 45px #163d2940,inset 1px 1px #fff; }
 @media(max-width:900px){.home-header{padding:0 24px;gap:20px}.home-nav{display:none}.home-hero{padding:48px 24px;gap:25px}.home-templates{padding:65px 24px}.template-grid{grid-template-columns:repeat(3,1fr)}.home-how{margin:0 24px 60px;flex-wrap:wrap}.home-footer{padding:25px 24px}}
 @media(max-width:600px){.home-header{height:70px;padding:0 18px}.home-brand b,.home-actions .small{display:none}.home-actions{gap:14px}.home-hero{display:flex;flex-direction:column;padding:45px 20px 28px;align-items:stretch}.hero-copy h1{font-size:49px}.hero-art{min-height:335px}.art-orbit{width:300px;height:300px}.art-card{width:185px;height:250px;padding:19px}.art-card-front strong{font-size:28px;margin-top:52px}.art-card-back strong{font-size:32px;margin-top:43px}.art-card-back{transform:translate(-66px,0) rotate(-10deg)}.art-card-front{transform:translate(45px,8px) rotate(7deg)}.home-templates{padding:54px 20px}.section-heading{align-items:start;flex-direction:column}.gallery-controls{align-items:stretch;flex-direction:column}.category-pills{overflow-x:auto;flex-wrap:nowrap}.category-pills button{white-space:nowrap}.home-search input{width:100%}.template-grid{grid-template-columns:repeat(2,1fr);gap:13px}.home-how{padding:30px;margin:0 20px 50px}.home-footer{padding:24px 20px;flex-wrap:wrap}}
+
+
+/* Durable display mode: the homepage is themed by state even if a nested UI
+   library toggles the root .dark class independently. */
+.studio-home[data-theme="dark"] { --ink:#ebf3ef; --muted:#a5b8ae; --paper:#111e1b; --card:#1b2d27; --line:#30463c; --brand:#a3d9bd; color-scheme:dark; }
+.studio-home[data-theme="light"] { color-scheme:light; }
+.studio-home[data-theme="dark"] .hero-art { background:radial-gradient(circle at 65% 24%,#64533d 0,transparent 35%),linear-gradient(145deg,#29483a,#162f27); }
+.studio-home[data-theme="dark"] .home-how { background:#223b30; }
+.home-theme { min-width:40px; min-height:40px; display:grid; place-items:center; border-radius:10px; }
+.home-theme:hover { background:color-mix(in srgb,var(--brand) 12%,transparent); }
+.home-theme:focus-visible { outline:2px solid var(--brand); outline-offset:3px; }
+
+/* Gallery fallback renders locally when an image asset fails to download. */
+.template-thumb { position:relative; aspect-ratio:4/4.8; isolation:isolate; }
+.template-thumb-fallback {
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  justify-content:center; align-items:center; text-align:center;
+  padding:16px; gap:12px; background:linear-gradient(155deg,#cee4d9,#eaf4e4);
+  color:#28634f; font-family:Georgia,serif;
+}
+.template-thumb-fallback .thumb-fallback-kicker {font:700 9px system-ui,sans-serif; letter-spacing:.1em;}
+.template-thumb-fallback strong {font-size:clamp(14px,1.4vw,25px); line-height:1.28;}
+.thumb-fallback-rule {width:36px;height:3px;background:#df956e;margin-top:15px;}
+.template-thumb-fallback small {font:650 11px system-ui,sans-serif;opacity:.65}
+.template-thumb img { position:absolute;inset:0; width:100%;height:100%;object-fit:contain; }
+.studio-home[data-theme="dark"] .template-thumb { background:#294238; }
+.studio-home[data-theme="dark"] .template-thumb-fallback { background:linear-gradient(145deg,#245341,#1c3d34);color:#dbf5e4; }
+@media(max-width:600px) {.template-thumb-fallback strong{font-size:19px;}}
