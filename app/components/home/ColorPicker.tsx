@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePreferences } from '@/app/preferences';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -28,6 +29,7 @@ const PRESET_COLORS = [
 ];
 
 export default function ColorPicker({ color, onChange, label, compact = false, disabled = false }: ColorPickerProps) {
+  const { locale } = usePreferences();
   const [inputValue, setInputValue] = useState(color);
   const [recentColors, setRecentColors] = useState<string[]>([]);
 
@@ -82,7 +84,7 @@ export default function ColorPicker({ color, onChange, label, compact = false, d
           <div className="space-y-4">
             {/* 颜色输入 */}
             <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">颜色值</label>
+              <label className="text-xs text-muted-foreground">{locale === 'ar' ? 'قيمة اللون' : 'Color value'}</label>
               <Input
                 value={inputValue}
                 onChange={(e) => handleInputChange(e.target.value)}
@@ -94,7 +96,7 @@ export default function ColorPicker({ color, onChange, label, compact = false, d
             {/* 最近使用的颜色 */}
             {recentColors.length > 0 && (
               <div className="space-y-3">
-                <label className="text-xs text-muted-foreground">最近使用</label>
+                <label className="text-xs text-muted-foreground">{locale === 'ar' ? 'المستخدمة مؤخرًا' : 'Recent'}</label>
                 <div className="grid grid-cols-10 gap-2.5">
                   {recentColors.map((recentColor, index) => (
                     <button
@@ -115,7 +117,7 @@ export default function ColorPicker({ color, onChange, label, compact = false, d
 
             {/* 预设颜色 */}
             <div className="space-y-3">
-              <label className="text-xs text-muted-foreground">预设颜色</label>
+              <label className="text-xs text-muted-foreground">{locale === 'ar' ? 'ألوان مقترحة' : 'Suggested colors'}</label>
               <div className="grid grid-cols-10 gap-2.5">
                 {PRESET_COLORS.map((presetColor) => (
                   <button
@@ -135,7 +137,7 @@ export default function ColorPicker({ color, onChange, label, compact = false, d
 
             {/* 原生颜色选择器 */}
             <div className="space-y-2">
-              <label className="text-xs text-muted-foreground">自定义颜色</label>
+              <label className="text-xs text-muted-foreground">{locale === 'ar' ? 'لون مخصص' : 'Custom color'}</label>
               <input
                 type="color"
                 value={color}

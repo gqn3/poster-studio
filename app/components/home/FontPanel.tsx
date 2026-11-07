@@ -460,7 +460,7 @@ export default function FontPanel({
                             fontFamily: isLoaded ? font.family : 'inherit',
                           }}
                         >
-                          {font.preview}
+                          {locale === 'ar' ? 'تصميم' : 'Design'}
                         </div>
                         <div className="text-xs text-muted-foreground">
                           {font.name}
@@ -590,7 +590,7 @@ export default function FontPanel({
                 }}
                 disabled={!selectedObject}
               >
-                {strokeEnabled ? '已启用' : '已禁用'}
+                {strokeEnabled ? (locale === 'ar' ? 'مفعّل' : 'On') : (locale === 'ar' ? 'متوقف' : 'Off')}
               </Button>
             </div>
 
@@ -1031,7 +1031,7 @@ export default function FontPanel({
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   <span className="text-sm text-muted-foreground text-center px-2">
-                    {uploadedBackgroundImage ? '点击更换图片' : '点击上传图片'}
+                    {uploadedBackgroundImage ? (locale === 'ar' ? 'تغيير الصورة' : 'Change image') : (locale === 'ar' ? 'رفع صورة' : 'Upload image')}
                   </span>
                 </label>
               </div>
@@ -1132,7 +1132,7 @@ export default function FontPanel({
                       ? 'border-primary ring-2 ring-primary/20 bg-gray-50'
                       : 'border-border/30 bg-white'
                   }`}
-                  title="无背景"
+                  title={locale === 'ar' ? 'بلا خلفية' : 'No background'}
                 >
                   <X className="h-3 w-3 text-muted-foreground" />
                 </button>

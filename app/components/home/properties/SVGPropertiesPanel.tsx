@@ -6,6 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePreferences } from '@/app/preferences';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,6 +29,7 @@ export default function SVGPropertiesPanel({
   onOpacityChange,
   onScaleChange,
 }: SVGPropertiesPanelProps) {
+  const { locale } = usePreferences();
   // 获取当前属性值
   const getFillColor = () => {
     if (selectedObject?.type === 'group') {
@@ -117,12 +119,12 @@ export default function SVGPropertiesPanel({
       style={{ width: '360px', borderLeft: '1px solid hsl(var(--border))' }}
     >
       <div className="p-4 space-y-6">
-        <h3 className="text-sm font-semibold">图标属性</h3>
+        <h3 className="text-sm font-semibold">{locale === 'ar' ? 'خصائص الأيقونة' : 'Icon properties'}</h3>
 
         {/* 填充颜色 */}
         {hasFill && (
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">填充颜色</Label>
+            <Label className="text-xs text-muted-foreground">{locale === 'ar' ? 'لون التعبئة' : 'Fill color'}</Label>
             <ColorPicker
               color={fillColor}
               onChange={onFillColorChange}
@@ -133,7 +135,7 @@ export default function SVGPropertiesPanel({
         {/* 描边颜色 */}
         {hasStroke && (
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">描边颜色</Label>
+            <Label className="text-xs text-muted-foreground">{locale === 'ar' ? 'لون الحدود' : 'Stroke color'}</Label>
             <ColorPicker
               color={strokeColor}
               onChange={onStrokeColorChange}
@@ -145,7 +147,7 @@ export default function SVGPropertiesPanel({
         {hasStroke && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs text-muted-foreground">描边粗细</Label>
+              <Label className="text-xs text-muted-foreground">{locale === 'ar' ? 'عرض الحدود' : 'Stroke width'}</Label>
               <Input
                 type="number"
                 value={strokeWidthInput}
@@ -187,7 +189,7 @@ export default function SVGPropertiesPanel({
         {/* 大小 */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-xs text-muted-foreground">大小</Label>
+            <Label className="text-xs text-muted-foreground">{locale === 'ar' ? 'الحجم' : 'Size'}</Label>
             <div className="flex items-center gap-1">
               <Input
                 type="number"
@@ -231,7 +233,7 @@ export default function SVGPropertiesPanel({
         {/* 透明度 */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-xs text-muted-foreground">透明度</Label>
+            <Label className="text-xs text-muted-foreground">{locale === 'ar' ? 'الشفافية' : 'Opacity'}</Label>
             <div className="flex items-center gap-1">
               <Input
                 type="number"
@@ -274,7 +276,7 @@ export default function SVGPropertiesPanel({
 
         {/* 提示信息 */}
         <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-md">
-          💡 提示: 这是一个 SVG 图标对象
+          {locale === 'ar' ? 'عدّل خصائص الأيقونة المحددة.' : 'Adjust the selected icon properties.'}
         </div>
       </div>
     </aside>

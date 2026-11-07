@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test('local image stays on device and survives reload', async ({ page }) => {
   const uploads: string[] = [];
   page.on('request', request => { if (request.method() === 'POST' && request.url().includes('/api/qiniu-upload')) uploads.push(request.url()); });
-  await page.goto('/');
+  await page.goto('/editor');
   await page.getByRole('button', { name: 'Image', exact: true }).click();
   await page.getByRole('tab', { name: 'Upload' }).click();
   const chooser = page.waitForEvent('filechooser');

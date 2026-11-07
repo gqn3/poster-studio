@@ -11,9 +11,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Menu, Download, Copy, Plus, ZoomIn, ZoomOut, Pencil, Trash2, Check, X, Database, ChevronDown, Palette, Hand, MousePointer2, Settings, Heart, QrCode, Layout, Save, Github, Sparkles } from 'lucide-react';
+import { Menu, Download, Copy, Plus, ZoomIn, ZoomOut, Pencil, Trash2, Check, X, Database, ChevronDown, Palette, Hand, MousePointer2, Settings, Heart, QrCode, Layout, Save, Github, Sparkles, Undo2, Redo2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { usePreferences } from '@/app/preferences';
+import Link from 'next/link';
 
 interface TopbarProps {
   versions: CanvasVersion[];
@@ -32,7 +33,12 @@ interface TopbarProps {
   onZoomReset: () => void;
   onPanModeToggle?: () => void;
   onDownload: () => void;
+  onSaveDesign: () => void;
   onCopy?: () => void;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
   onShare: () => void;
   isSharing?: boolean;
   onOpenSettings?: () => void;
@@ -59,7 +65,9 @@ export default function Topbar({
   onZoomReset,
   onPanModeToggle,
   onDownload,
+  onSaveDesign,
   onCopy,
+  onUndo, onRedo, canUndo, canRedo,
   onOpenSettings,
   onOpenDonation,
   onOpenWeChat,
@@ -74,6 +82,7 @@ export default function Topbar({
   const [editingName, setEditingName] = useState('');
 
   const activeVersion = versions.find((v) => v.id === activeVersionId);
+  const displayName = (name: string) => name.replace(/^(?:画布|Canvas) (\d+)/, (_, n) => locale === 'ar' ? `لوحة ${n}` : `Canvas ${n}`).replace(/ - (?:副本|copy)$/, locale === 'ar' ? ' - نسخة' : ' - copy');
 
   useEffect(() => {
     if (canvasSize.ratio in CANVAS_RATIOS) {
@@ -101,22 +110,19 @@ export default function Topbar({
 
   return (
     <header
-      className="tapndo-topbar flex items-center justify-between px-8 bg-background"
+      className="tapndo-topbar flex items-center justify-between px-4 bg-background"
       style={{ height: '64px', borderBottom: '1px solid hsl(var(--border))' }}
     >
       {/* 左侧：Logo + 版本选择 + 尺寸选择 */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-3">
         {/* Logo */}
-        <div className="flex items-center gap-3">
-          <Palette className="h-5 w-5 text-muted-foreground" />
-          <span className="font-semibold text-foreground text-base">TapNDo Studio</span>
-        </div>
+        <Link href="/" className="tapndo-editor-brand" aria-label={locale === 'ar' ? 'العودة للرئيسية' : 'Back to home'}><span className="brand-mark"><Palette size={18}/></span><span>TapNDo <b>Studio</b></span></Link>
 
         {/* 版本选择 */}
         <DropdownMenu open={versionMenuOpen} onOpenChange={setVersionMenuOpen}>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="h-10 px-5 border-gray-200 gap-2">
-              {activeVersion?.name || (locale === 'ar' ? 'لوحة 1' : 'Canvas 1')}
+            <Button variant="outline" className="h-10 px-3 border-gray-200 gap-2">
+              {activeVersion ? displayName(activeVersion.name) : (locale === 'ar' ? 'لوحة 1' : 'Canvas 1')}
               <ChevronDown className="h-4 w-4 text-gray-500" />
             </Button>
           </DropdownMenuTrigger>
@@ -167,7 +173,7 @@ export default function Topbar({
                         }}
                         className="flex-1 text-left px-2 py-1 text-sm"
                       >
-                        {version.name}
+                        {displayName(version.name)}
                       </button>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
@@ -215,7 +221,7 @@ export default function Topbar({
         {/* 尺寸选择 */}
         <DropdownMenu open={sizeMenuOpen} onOpenChange={setSizeMenuOpen}>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="h-10 px-5 border-gray-200 gap-2">
+            <Button variant="outline" className="h-10 px-3 border-gray-200 gap-2">
               {canvasSize.name} ({canvasSize.ratio})
               <ChevronDown className="h-4 w-4 text-gray-500" />
             </Button>
@@ -295,6 +301,10 @@ export default function Topbar({
       </div>
       {/* 右侧：缩放控制 + 复制 + 下载 */}
       <div className="flex items-center gap-3">
+        <div className="tapndo-history">
+          <button type="button" onClick={onUndo} disabled={!canUndo} aria-label={locale === 'ar' ? 'تراجع من الشريط العلوي' : 'Undo from top bar'} title={locale === 'ar' ? 'تراجع' : 'Undo'}><Undo2 size={17}/></button>
+          <button type="button" onClick={onRedo} disabled={!canRedo} aria-label={locale === 'ar' ? 'إعادة من الشريط العلوي' : 'Redo from top bar'} title={locale === 'ar' ? 'إعادة' : 'Redo'}><Redo2 size={17}/></button>
+        </div>
         {/* 缩放控制 */}
         <div className="flex items-center gap-1 px-2 py-1 rounded-md border border-gray-200 bg-background">
           {/* 拖拽模式切换 */}
@@ -341,13 +351,14 @@ export default function Topbar({
           </button>
         </div>
 
+        <Button variant="outline" className="tapndo-save-design h-10 px-3 gap-2" onClick={onSaveDesign} aria-label={locale === 'ar' ? 'حفظ التصميم' : 'Save design'}><Save className="h-4 w-4"/><span>{locale === 'ar' ? 'حفظ' : 'Save'}</span></Button>
         {onCopy && (
-          <Button className="h-10 px-6 py-2 gap-2 shadow-sm" onClick={onCopy}>
+          <Button className="tapndo-copy h-10 px-4 py-2 gap-2 shadow-sm" onClick={onCopy}>
             <Copy className="h-4 w-4" />
             {locale === 'ar' ? 'نسخ' : 'Copy'}
           </Button>
         )}
-        <Button className="h-10 px-6 py-2 gap-2 shadow-sm" onClick={onDownload}>
+        <Button className="h-10 px-4 py-2 gap-2 shadow-sm" onClick={onDownload}>
           <Download className="h-4 w-4" />
           {locale === 'ar' ? 'تنزيل' : 'Download'}
         </Button>
@@ -382,16 +393,6 @@ export default function Topbar({
             <DropdownMenuItem onClick={() => window.open('https://github.com/joeseesun/poster-studio', '_blank')}>
               <Github className="h-4 w-4 mr-2" />
               GitHub
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => window.open('https://tuijian.qiaomu.ai/', '_blank')}>
-              <Sparkles className="h-4 w-4 mr-2" />
-              乔木推荐
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => window.open('https://x.com/vista8', '_blank')}>
-              <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-              </svg>
-              联系作者
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

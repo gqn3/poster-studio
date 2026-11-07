@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('template gallery and confirmation are usable in English and Arabic', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/editor');
   await expect(page.locator('canvas.upper-canvas')).toBeVisible();
   await page.getByRole('button', { name: 'Templates', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Template library' })).toBeVisible();

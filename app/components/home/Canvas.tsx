@@ -208,6 +208,7 @@ export default function Canvas({
       className="flex-1 flex flex-col items-center justify-center relative overflow-hidden"
       style={{
         backgroundColor: '#F7F8FA',
+        direction: 'ltr',
         cursor: canPan ? (isPanning ? 'grabbing' : 'grab') : 'default',
         touchAction: canPan ? 'none' : 'auto',
       }}
@@ -218,8 +219,10 @@ export default function Canvas({
       onPointerCancel={stopPointerPan}
       onLostPointerCapture={stopPointerPan}
     >
+      <div className="tapndo-stage-heading"><span>{locale === 'ar' ? 'مساحة التصميم' : 'DESIGN SPACE'}</span><span>{locale === 'ar' ? 'حفظ تلقائي' : 'AUTOSAVE ON'}</span></div>
       {/* 画布容器（带边框和阴影） */}
       <div
+        className="tapndo-artboard"
         style={{
           width: `${canvasSize.width * finalScale}px`,
           height: `${canvasSize.height * finalScale}px`,

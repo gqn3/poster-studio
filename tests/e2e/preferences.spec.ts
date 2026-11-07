@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 for (const width of [390, 768, 1440]) {
   test(`Arabic and dark preferences survive reload at ${width}px`, async ({ browser }) => {
     const page = await browser.newPage({ viewport: { width, height: 900 } });
-    await page.goto('/');
+    await page.goto('/editor');
     await page.getByRole('button', { name: 'التبديل إلى العربية' }).click();
     await page.getByRole('button', { name: 'تفعيل الوضع الداكن' }).click();
     await page.reload();

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('a template remains editable and undoable after being applied', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/editor');
   await expect(page.locator('canvas.upper-canvas')).toBeVisible();
   await page.getByRole('button', { name: 'Templates', exact: true }).click();
   await page.getByRole('img', { name: 'Quote card · 720×960' }).click();
@@ -17,7 +17,7 @@ test('a template remains editable and undoable after being applied', async ({ pa
 });
 
 test('applying a template then switching canvases preserves the template in the original canvas', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/editor');
   await expect(page.locator('canvas.upper-canvas')).toBeVisible();
   await page.getByRole('button', { name: 'Templates', exact: true }).click();
   await page.getByRole('img', { name: 'Quote card · 720×960' }).click();

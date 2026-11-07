@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
 test('text survives reload and PNG download contains image bytes', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/editor');
   await page.getByRole('button', { name: 'Text', exact: true }).click();
   await expect.poll(async () => page.evaluate(() => {
     const saved = localStorage.getItem('xhs_cover_versions');

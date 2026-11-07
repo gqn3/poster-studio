@@ -28,7 +28,7 @@ test('embedded image actually renders after reload and PNG export is nonempty', 
   page.on('request', request => {
     if (request.method() === 'POST' && request.url().includes('/api/qiniu-upload')) uploads.push(request.url());
   });
-  await page.goto('/');
+  await page.goto('/editor');
   await page.getByRole('button', { name: 'Image', exact: true }).click();
   await page.getByRole('tab', { name: 'Upload' }).click();
   const chooser = page.waitForEvent('filechooser');

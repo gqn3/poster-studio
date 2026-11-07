@@ -47,14 +47,14 @@ export default function Sidebar({
     { id: 'textbox', label: locale === 'ar' ? 'مربع نص' : 'Text box', icon: AlignLeft },
     { id: 'pencil', label: locale === 'ar' ? 'رسم (P)' : 'Draw (P)', icon: Pencil },
     { id: 'image', label: locale === 'ar' ? 'صورة' : 'Image', icon: Image },
-    { id: 'emoji', label: 'Emoji', icon: Smile },
+    { id: 'emoji', label: locale === 'ar' ? 'رموز تعبيرية' : 'Emoji', icon: Smile },
     { id: 'shape', label: locale === 'ar' ? 'شكل' : 'Shape', icon: Square },
     { id: 'icon', label: locale === 'ar' ? 'أيقونات' : 'Icons', icon: Shapes },
   ];
 
   return (
     <aside
-      className="flex flex-col items-center py-6 gap-2 bg-background"
+      className="tapndo-sidebar flex flex-col items-center py-6 gap-2 bg-background"
       style={{ width: '56px', borderRight: '1px solid hsl(var(--border))' }}
     >
       <TooltipProvider delayDuration={300}>
@@ -71,9 +71,10 @@ export default function Sidebar({
                   onClick={() => onToolChange(tool.id)}
                   aria-label={tool.label}
                   title={tool.label}
-                  className="relative h-10 w-10"
+                  className="tapndo-tool-button relative"
                 >
                   <Icon className="h-5 w-5" />
+                  <span className="tapndo-tool-label">{tool.label.replace(/\s*\(.*\)$/, '')}</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right" sideOffset={2} align="center" alignOffset={4}>

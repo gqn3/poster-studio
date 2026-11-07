@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePreferences } from '@/app/preferences';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,6 +21,7 @@ export default function PathPropertiesPanel({
   onStrokeWidthChange,
   onOpacityChange,
 }: PathPropertiesPanelProps) {
+  const { locale } = usePreferences();
   // 判断对象类型
   const isLine = selectedObject?.type === 'line';
   const isPath = selectedObject?.type === 'path';
@@ -52,13 +54,13 @@ export default function PathPropertiesPanel({
     >
       <div className="p-4 space-y-6">
         <h3 className="text-sm font-semibold">
-          {isLine ? '线条属性' : '路径属性'}
+          {isLine ? (locale === 'ar' ? 'خصائص الخط' : 'Line properties') : (locale === 'ar' ? 'خصائص المسار' : 'Path properties')}
         </h3>
 
         {/* 颜色 */}
         <div className="space-y-2">
           <Label className="text-xs text-muted-foreground">
-            {isLine ? '线条颜色' : '描边颜色'}
+            {isLine ? (locale === 'ar' ? 'لون الخط' : 'Line color') : (locale === 'ar' ? 'لون الحدود' : 'Stroke color')}
           </Label>
           <ColorPicker
             color={strokeColor}
@@ -70,7 +72,7 @@ export default function PathPropertiesPanel({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label className="text-xs text-muted-foreground">
-              {isLine ? '线条粗细' : '描边粗细'}
+              {isLine ? (locale === 'ar' ? 'عرض الخط' : 'Line width') : (locale === 'ar' ? 'عرض الحدود' : 'Stroke width')}
             </Label>
             <Input
               type="number"
@@ -119,7 +121,7 @@ export default function PathPropertiesPanel({
         {/* 不透明度 */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-xs text-muted-foreground">不透明度</Label>
+            <Label className="text-xs text-muted-foreground">{locale === 'ar' ? 'الشفافية' : 'Opacity'}</Label>
             <div className="flex items-center gap-1">
               <Input
                 type="number"
@@ -170,7 +172,7 @@ export default function PathPropertiesPanel({
         {/* 提示信息 */}
         {isPath && (
           <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-md">
-            💡 提示: 这是一个{selectedObject?.isShape ? '箭头' : '画笔路径'}对象
+            {locale === 'ar' ? 'يمكنك تعديل خصائص العنصر المحدد.' : 'Adjust the selected object properties.'}
           </div>
         )}
       </div>

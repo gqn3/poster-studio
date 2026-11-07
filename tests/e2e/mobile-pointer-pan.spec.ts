@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('touch pointer pans canvas when pan mode is active', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/');
+  await page.goto('/editor');
   await expect(page.locator('canvas.upper-canvas')).toBeVisible();
 
   const container = page.locator('#canvas-container');

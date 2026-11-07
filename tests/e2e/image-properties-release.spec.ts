@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('image properties expose usable local controls without unavailable AI actions', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/editor');
   await page.getByRole('button', { name: 'Image', exact: true }).click();
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: /Upload image/ }).click();

@@ -1,6 +1,7 @@
 // 形状选择对话框
 'use client';
 
+import { usePreferences } from '@/app/preferences';
 import { Square, Circle, Triangle, Star, Heart, Hexagon, Minus, ArrowRight } from 'lucide-react';
 
 interface ShapeDialogProps {
@@ -21,6 +22,9 @@ const shapes = [
 ];
 
 export default function ShapeDialog({ open, onClose, onSelectShape }: ShapeDialogProps) {
+  const { locale } = usePreferences();
+  const ar = locale === 'ar';
+  const labels: Record<string, [string,string]> = {rect:['Rectangle','مستطيل'],circle:['Circle','دائرة'],triangle:['Triangle','مثلث'],line:['Line','خط'],arrow:['Arrow','سهم'],star:['Star','نجمة'],heart:['Heart','قلب'],hexagon:['Hexagon','سداسي']};
   if (!open) return null;
 
   return (
@@ -29,8 +33,8 @@ export default function ShapeDialog({ open, onClose, onSelectShape }: ShapeDialo
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
       {/* 对话框内容 */}
-      <div className="relative bg-white rounded-lg shadow-xl p-6 w-[480px]">
-        <h2 className="text-lg font-semibold mb-4">选择形状</h2>
+      <div className="relative bg-background text-foreground rounded-2xl shadow-xl p-6 w-[min(480px,95vw)]">
+        <h2 className="text-lg font-semibold mb-4">{ar ? 'اختر شكلاً' : 'Choose a shape'}</h2>
 
         {/* 形状网格 */}
         <div className="grid grid-cols-3 gap-3">
@@ -46,7 +50,7 @@ export default function ShapeDialog({ open, onClose, onSelectShape }: ShapeDialo
                 className="flex flex-col items-center justify-center gap-2 p-6 rounded-lg border-2 border-border hover:border-primary hover:bg-primary/5 transition-all"
               >
                 <Icon className="h-8 w-8" />
-                <span className="text-sm font-medium">{shape.label}</span>
+                <span className="text-sm font-medium">{labels[shape.id][ar ? 1 : 0]}</span>
               </button>
             );
           })}
@@ -57,7 +61,7 @@ export default function ShapeDialog({ open, onClose, onSelectShape }: ShapeDialo
           onClick={onClose}
           className="mt-4 w-full py-2 px-4 rounded-md border border-border hover:bg-gray-50 transition-colors"
         >
-          取消
+          {ar ? 'إلغاء' : 'Cancel'}
         </button>
       </div>
     </div>

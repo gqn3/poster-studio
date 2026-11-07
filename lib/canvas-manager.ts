@@ -342,12 +342,14 @@ export class CanvasManager {
   }
 
   // 添加单行文本（IText）
-  addText(text = '双击编辑') {
+  addText(text = 'Double-click to edit', direction: 'ltr' | 'rtl' = 'ltr') {
     const obj = new fabric.IText(text, {
       left: this.width / 2,
       top: this.height / 2,
       fontSize: 60,
-      fontFamily: 'LXGW WenKai',
+      fontFamily: 'Noto Sans Arabic',
+      direction,
+      textAlign: direction === 'rtl' ? 'right' : 'left',
       fill: '#333333',
       originX: 'center',
       originY: 'center',
@@ -362,13 +364,15 @@ export class CanvasManager {
   }
 
   // 添加多行文本（Textbox，支持自动换行）
-  addTextbox(text = '双击编辑') {
+  addTextbox(text = 'Double-click to edit', direction: 'ltr' | 'rtl' = 'ltr') {
     const obj = new fabric.Textbox(text, {
       left: this.width / 2,
       top: this.height / 2,
       width: this.width * 0.8, // 画布宽度的80%
       fontSize: 60,
-      fontFamily: 'LXGW WenKai',
+      fontFamily: 'Noto Sans Arabic',
+      direction,
+      textAlign: direction === 'rtl' ? 'right' : 'left',
       fill: '#333333',
       originX: 'center',
       originY: 'center',

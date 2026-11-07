@@ -42,7 +42,7 @@ test.beforeEach(async ({ page }) => {
       }],
     }));
   });
-  await page.goto('/');
+  await page.goto('/editor');
   await expectRedImage(page, 0.2, 0.2);
 });
 

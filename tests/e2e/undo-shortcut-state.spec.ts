@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('keyboard undo and redo keep the toolbar state synchronized', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/editor');
   await expect(page.locator('canvas.upper-canvas')).toBeVisible();
   const undo = page.getByRole('button', { name: 'Undo', exact: true });
   const redo = page.getByRole('button', { name: 'Redo', exact: true });
@@ -27,7 +27,7 @@ test('keyboard undo and redo keep the toolbar state synchronized', async ({ page
 });
 
 test('focused input retains its native undo rather than undoing the canvas', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/editor');
   await expect(page.locator('canvas.upper-canvas')).toBeVisible();
   await page.getByRole('button', { name: 'Text', exact: true }).click();
   const undo = page.getByRole('button', { name: 'Undo', exact: true });
@@ -47,11 +47,11 @@ test('focused input retains its native undo rather than undoing the canvas', asy
 });
 
 test('a new canvas cannot undo into a different canvas', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/editor');
   await expect(page.locator('canvas.upper-canvas')).toBeVisible();
   await page.getByRole('button', { name: 'Text', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Undo', exact: true })).toBeEnabled();
-  await page.getByRole('button', { name: '画布 1' }).click();
+  await page.getByRole('button', { name: 'Canvas 1' }).click();
   await page.getByRole('menuitem', { name: 'New canvas' }).click();
   await expect(page.getByRole('button', { name: 'Undo', exact: true })).toBeDisabled();
 });

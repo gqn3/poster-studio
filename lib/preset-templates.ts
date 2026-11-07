@@ -68,7 +68,7 @@ function createQuoteCard(
           fontFamily: '抖音美好体, DouyinSansBold, PingFang SC, Microsoft YaHei, sans-serif',
           fill: textColor,
           fontWeight: 'bold',
-          text: '点击修改\n文字内容',
+          text: 'Your idea starts here',
           lineHeight: 1.4,
         },
         // 装饰短线（粗细17）

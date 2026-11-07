@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('canvas zoom tracks available editor space without window resize', async ({ page }) => {
   await page.setViewportSize({ width: 1024, height: 768 });
-  await page.goto('/');
+  await page.goto('/editor');
   const container = page.locator('#canvas-container');
   const wrapper = container.locator('canvas').locator('xpath=../..');
   await expect(container).toBeVisible();

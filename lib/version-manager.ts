@@ -9,7 +9,7 @@ export class VersionManager {
   constructor() {
     this.load();
     if (this.versions.length === 0) {
-      this.create('画布 1');
+      this.create('Canvas 1');
     }
     if (!this.versions.some((version) => version.id === this.activeId)) {
       this.activeId = this.versions[0].id;
@@ -36,7 +36,7 @@ export class VersionManager {
       // Date.now() alone collides when users duplicate/create canvases within one millisecond.
       // Use an incrementing suffix so IDs stay unique even with a frozen clock.
       id: this.nextVersionId(),
-      name: name || `画布 ${this.versions.length + 1}`,
+      name: name || `Canvas ${this.versions.length + 1}`,
       data: '',
       canvasSize,
       createdAt: Date.now(),
@@ -59,7 +59,7 @@ export class VersionManager {
       const timestamp = Date.now();
       const newVersion: CanvasVersion = {
         id: this.nextVersionId(),
-        name: `${source.name} - 副本`,
+        name: `${source.name} - copy`,
         data,
         canvasSize: canvasSize || source.canvasSize,
         createdAt: timestamp,

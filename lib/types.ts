@@ -41,6 +41,7 @@ export const HIGHLIGHT_COLORS = [
 ];
 
 export const LOCAL_OR_SYSTEM_FONTS = [
+  'Noto Sans Arabic',
   'Noto Sans SC',
   'Noto Serif SC',
   'ZCOOL KuaiLe',
@@ -54,6 +55,7 @@ export const LOCAL_OR_SYSTEM_FONTS = [
 
 // 精选字体（中文 + 英文）- 按使用频率和热度排序
 export const FONTS: FontConfig[] = [
+  { name: 'Noto Sans Arabic', family: 'Noto Sans Arabic', weight: [400, 700], preview: 'تصميم' },
   { name: 'Noto Sans', family: 'Noto Sans SC', weight: [400, 700], preview: 'Design' },
   { name: 'Noto Serif', family: 'Noto Serif SC', weight: [400, 700], preview: 'Design' },
   { name: 'Georgia', family: 'Georgia', weight: [400, 700], preview: 'Design' },

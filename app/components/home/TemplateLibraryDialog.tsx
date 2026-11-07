@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Search, Trash2 } from 'lucide-react';
 import { getTemplateManager, Template, TemplateCategory } from '@/lib/template-manager';
 import { PRESET_TEMPLATES } from '@/lib/preset-templates';
+import { presetPreview } from '@/lib/preset-preview';
 import * as fabric from 'fabric';
 
 interface TemplateLibraryDialogProps {
@@ -47,6 +48,7 @@ export default function TemplateLibraryDialog({
   const [templates, setTemplates] = useState<Template[]>([]);
   const [publicTemplates, setPublicTemplates] = useState<Template[]>([]); // 🆕 网友分享的模板
   const [selectedCategory, setSelectedCategory] = useState<TemplateCategory | 'all' | '网友分享'>('all');
+  useEffect(() => { const ratio = new URLSearchParams(window.location.search).get('ratio'); const match = Object.keys(categoryLabels).find(key => key.startsWith(`${ratio} `)); if (ratio && match) setSelectedCategory(match as TemplateCategory); }, []);
   const [searchQuery, setSearchQuery] = useState('');
   const [confirmTemplate, setConfirmTemplate] = useState<Template | null>(null);
   const [showAllSizes, setShowAllSizes] = useState(true); // 默认显示所有尺寸
@@ -329,24 +331,6 @@ export default function TemplateLibraryDialog({
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
           <div className="flex items-center justify-between">
             <DialogTitle>{label('Template library', 'مكتبة القوالب')}</DialogTitle>
-            {/* 调试按钮：只在按下"aaaa"后显示 */}
-            {debugMode && (
-              <div className="flex gap-2">
-                <button
-                  onClick={clearPresetCache}
-                  className="px-3 py-1.5 text-sm bg-gray-600 text-white rounded hover:bg-gray-500"
-                >
-                  🗑️ 清除缓存
-                </button>
-                <button
-                  onClick={generateAllThumbnails}
-                  disabled={isGenerating}
-                  className="px-3 py-1.5 text-sm bg-gray-900 text-white rounded hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-                >
-                  {isGenerating ? '生成中...' : '🔄 重新生成缩略图'}
-                </button>
-              </div>
-            )}
           </div>
         </DialogHeader>
 
@@ -450,7 +434,7 @@ export default function TemplateLibraryDialog({
                       <div className="relative rounded-lg overflow-hidden border border-gray-200 hover:border-gray-900 hover:shadow-xl transition-all duration-200" style={{ aspectRatio: '3/4', backgroundColor: '#f5f5f5' }}>
                         {/* 图片 */}
                         <img
-                          src={template.thumbnail || ''}
+                          src={template.isPreset ? presetPreview(template, ar) : (template.thumbnail || '')}
                           alt={templateLabel(template)}
                           style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
                         />

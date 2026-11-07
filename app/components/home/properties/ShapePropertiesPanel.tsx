@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePreferences } from '@/app/preferences';
 import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,6 +25,7 @@ export default function ShapePropertiesPanel({
   onOpacityChange,
   onCornerRadiusChange,
 }: ShapePropertiesPanelProps) {
+  const { locale } = usePreferences();
   // 获取当前属性值
   const fillColor = selectedObject?.fill || '#3b82f6';
   const strokeColor = selectedObject?.stroke || '#1e40af';
@@ -63,12 +65,12 @@ export default function ShapePropertiesPanel({
       style={{ width: '360px', borderLeft: '1px solid hsl(var(--border))' }}
     >
       <div className="p-4 space-y-6">
-        <h3 className="text-sm font-semibold">图形属性</h3>
+        <h3 className="text-sm font-semibold">{locale === 'ar' ? 'خصائص الشكل' : 'Shape properties'}</h3>
 
         {/* 填充颜色 */}
         {hasFill && (
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">填充颜色</Label>
+            <Label className="text-xs text-muted-foreground">{locale === 'ar' ? 'لون التعبئة' : 'Fill color'}</Label>
             <ColorPicker
               color={fillColor}
               onChange={onFillColorChange}
@@ -79,7 +81,7 @@ export default function ShapePropertiesPanel({
         {/* 描边颜色 */}
         {hasStroke && (
           <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">描边颜色</Label>
+            <Label className="text-xs text-muted-foreground">{locale === 'ar' ? 'لون الحدود' : 'Stroke color'}</Label>
             <ColorPicker
               color={strokeColor}
               onChange={onStrokeColorChange}
@@ -91,7 +93,7 @@ export default function ShapePropertiesPanel({
         {hasStroke && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs text-muted-foreground">描边粗细</Label>
+              <Label className="text-xs text-muted-foreground">{locale === 'ar' ? 'عرض الحدود' : 'Stroke width'}</Label>
               <Input
                 type="number"
                 value={strokeWidthInput}
@@ -140,7 +142,7 @@ export default function ShapePropertiesPanel({
         {/* 不透明度 */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label className="text-xs text-muted-foreground">不透明度</Label>
+            <Label className="text-xs text-muted-foreground">{locale === 'ar' ? 'الشفافية' : 'Opacity'}</Label>
             <div className="flex items-center gap-1">
               <Input
                 type="number"
@@ -192,7 +194,7 @@ export default function ShapePropertiesPanel({
         {isRect && onCornerRadiusChange && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-xs text-muted-foreground">圆角</Label>
+              <Label className="text-xs text-muted-foreground">{locale === 'ar' ? 'استدارة الزوايا' : 'Corner radius'}</Label>
               <Input
                 type="number"
                 value={cornerRadiusInput}

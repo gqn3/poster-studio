@@ -514,7 +514,7 @@ export default function ImageDialog({
                       >
                         <img
                           src={item.url}
-                          alt={item.filename || '图片'}
+                          alt={item.filename || (locale === 'ar' ? 'صورة' : 'Image')}
                           className="w-full h-full object-cover"
                           loading="lazy"
                         />
@@ -540,10 +540,10 @@ export default function ImageDialog({
                       onClick={() => setLibraryPage(p => Math.max(1, p - 1))}
                       disabled={libraryPage === 1}
                     >
-                      上一页
+                      {locale === 'ar' ? 'السابق' : 'Previous'}
                     </Button>
                     <span className="text-sm text-muted-foreground">
-                      第 {libraryPage} / {totalLibraryPages} 页
+                      {locale === 'ar' ? 'صفحة' : 'Page'} {libraryPage} / {totalLibraryPages}
                     </span>
                     <Button
                       variant="outline"
@@ -551,7 +551,7 @@ export default function ImageDialog({
                       onClick={() => setLibraryPage(p => Math.min(totalLibraryPages, p + 1))}
                       disabled={libraryPage === totalLibraryPages}
                     >
-                      下一页
+                      {locale === 'ar' ? 'التالي' : 'Next'}
                     </Button>
                   </div>
                 )}

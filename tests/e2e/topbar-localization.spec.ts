@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('canvas actions and zoom controls are accessible in Arabic and English', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/editor');
   await page.getByRole('button', { name: 'التبديل إلى العربية' }).click();
   await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');

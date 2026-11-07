@@ -6,6 +6,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { usePreferences } from '@/app/preferences';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,8 @@ export default function IconLibraryDialog({
   onClose,
   onSelectIcon,
 }: IconLibraryDialogProps) {
+  const { locale } = usePreferences();
+  const labels: Record<string,[string,string]> = {all:['All','الكل'], '箭头':['Arrows','أسهم'], '形状':['Shapes','أشكال'], UI:['Interface','واجهة'], '社交':['Social','تواصل'], '文件':['Files','ملفات'], '编辑':['Editing','تحرير'], '媒体':['Media','وسائط'], '商业':['Business','أعمال'], '天气':['Weather','طقس'], '其他':['Other','أخرى']};
   const [selectedCategory, setSelectedCategory] = useState<IconCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [recentIconNames, setRecentIconNames] = useState<string[]>([]);
@@ -78,7 +81,7 @@ export default function IconLibraryDialog({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl h-[80vh] flex flex-col p-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <DialogTitle>图标库</DialogTitle>
+          <DialogTitle>{locale === 'ar' ? 'مكتبة الأيقونات' : 'Icon library'}</DialogTitle>
         </DialogHeader>
 
         {/* 搜索栏 */}
@@ -86,7 +89,7 @@ export default function IconLibraryDialog({
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="搜索图标..."
+              placeholder={locale === 'ar' ? 'ابحث عن أيقونة' : 'Search icons'}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -105,7 +108,7 @@ export default function IconLibraryDialog({
                 onClick={() => setSelectedCategory(category)}
                 className="shrink-0"
               >
-                {category === 'all' ? '全部' : category}
+                {labels[category]?.[locale === 'ar' ? 1 : 0] || category}
               </Button>
             ))}
           </div>
@@ -115,7 +118,7 @@ export default function IconLibraryDialog({
         <div className="flex-1 overflow-y-auto p-6">
           {filteredIcons.length === 0 ? (
             <div className="flex items-center justify-center h-full text-muted-foreground">
-              未找到图标
+              {locale === 'ar' ? 'لم يُعثر على أيقونات' : 'No icons found'}
             </div>
           ) : (
             <div className="space-y-6">
@@ -167,7 +170,7 @@ export default function IconLibraryDialog({
         {/* 底部提示 */}
         <div className="px-6 py-3 border-t bg-muted/30">
           <p className="text-xs text-muted-foreground">
-            💡 提示：点击图标插入到画布，插入后可在右侧属性面板调整颜色和大小
+            {locale === 'ar' ? 'اختر أيقونة لإضافتها، ثم عدّل لونها وحجمها من الخصائص.' : 'Choose an icon, then adjust its color and size in properties.'}
           </p>
         </div>
       </DialogContent>
